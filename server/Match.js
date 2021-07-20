@@ -3,6 +3,19 @@ module.exports = class Match {
         this.code = code;
         this.playerA = null;
         this.playerB = null;
+        this.board = [
+            ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'].map(p => [p, 1]),
+            Array(8).fill(null).map(p => ['pawn', 1]),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill(null),
+            Array(8).fill(null).map(p => ['pawn', 0]),
+            ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'].map(p => [p, 0]),
+        ];
+        this.width = this.board[0].length;
+        this.height = this.board.length;
+        this.started = false;
     }
 
     get players() {
@@ -20,7 +33,7 @@ module.exports = class Match {
 
     get matchInfo() {
         return {
-            code: this.code,
+            ...Object.fromEntries(['code', 'width', 'height', 'board', 'started'].map(key => [key, this[key]])),
         }
     }
 
