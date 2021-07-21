@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import layers from './layers.js';
 import start from './gameplay.js';
 import BrushIcon from '@material-ui/icons/Brush';
+import showDialog from '../showDialog.js';
 
 const useStyles = makeStyles({
     root: {

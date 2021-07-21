@@ -39,7 +39,6 @@ io.on('connect', socket => {
 
     socket.on('joinMatch', code => {
         code = code.toUpperCase();
-        console.log(code, matches[code]);
         if (matches[code]) {
             if (matches[code].connected.length < 2)
                 matches[code].join(socket);
