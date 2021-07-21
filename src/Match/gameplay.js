@@ -5,17 +5,33 @@ import recolorAll from './pieceImages.js';
 var paper;
 var matchInfo;
 var squareSize = 256;
-var pieceImages = recolorAll([242, 240, 220], [92, 90, 88]);
+var pieceImages;
+var size = [null, null];
+
+const hexToRgb = hex =>
+    hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
+        ,(m, r, g, b) => '#' + r + r + g + g + b + b)
+    .substring(1).match(/.{2}/g)
+    .map(x => parseInt(x, 16))
+
+async function recolorImages() {
+    pieceImages = recolorAll(hexToRgb(localStorage['fc-color-a']), hexToRgb(localStorage['fc-color-b']));
+}
+setTimeout(recolorImages, 250);
 
 function drawGrid() {
-    Object.values(paper).forEach(layer => {
-        layer.canvas.width = squareSize * matchInfo.width;
-        layer.canvas.height = squareSize * matchInfo.height;
-    });
+    if (size[0] != matchInfo.width && size[1] != matchInfo.height) {
+        Object.values(paper).forEach(layer => {
+            layer.canvas.width = squareSize * matchInfo.width;
+            layer.canvas.height = squareSize * matchInfo.height;
+        });
+        drawPieces();
+        size = [matchInfo.width, matchInfo.height];
+    }
 
     for (let x = 0; x < matchInfo.width; x++) {
         for (let y = 0; y < matchInfo.height; y++) {
-            paper.grid.ctx.fillStyle = (((x % 2) ? y+1 : y) % 2) ? '#dd8fff' : '#f2dadd';
+            paper.grid.ctx.fillStyle = (((x % 2) ? y+1 : y) % 2) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
             paper.grid.ctx.fillRect(x * squareSize, y * squareSize, squareSize, squareSize);
         }
     }
@@ -23,7 +39,6 @@ function drawGrid() {
 
 async function drawPieces() {
     pieceImages = await pieceImages;
-    console.log(pieceImages);
 
     paper.pieces.ctx.clearRect(0, 0, paper.pieces.canvas.width, paper.pieces.canvas.height);
 
@@ -37,7 +52,7 @@ async function drawPieces() {
     }
 }
 
-export default function start(initialMatchInfo) {
+function start(initialMatchInfo) {
     matchInfo = initialMatchInfo;
 
     paper = Object.fromEntries(layers.map(layer => {
@@ -52,6 +67,11 @@ export default function start(initialMatchInfo) {
     }));
 
     drawGrid();
-    console.log(':D');
-    new Promise(res => res(drawPieces()));
 }
+
+export {
+    start,
+    recolorImages,
+    drawGrid,
+    drawPieces,
+};

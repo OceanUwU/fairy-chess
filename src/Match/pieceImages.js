@@ -50,7 +50,6 @@ async function recolorAll(a, b) {
         pieceImagesArray.splice(0, 3);
     }
     await Promise.all([].concat(...Object.values(pieceImages)));
-    console.log(pieceImages);
     return pieceImages;
 }
 
