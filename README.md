@@ -4,12 +4,12 @@ chess with extra pieces
 ## setup
 
 1. `npm ci`
-1. create `server/cfg.json`, paste the following JSON, and edit it to your needs
-    ```json
-    {
+1. create `server/cfg.js`, paste the following code, and edit it to your needs
+    ```js
+    export default {
         "port": 7621,
         "dev": false
-    }
+    };
     ```
     **options:**
     `port`: the port to run the server from

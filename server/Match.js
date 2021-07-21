@@ -1,4 +1,4 @@
-module.exports = class Match {
+export default class Match {
     constructor(code) {
         this.code = code;
         this.playerA = null;
@@ -47,4 +47,4 @@ module.exports = class Match {
         } else
             socket.emit('err', 'This match is full!');
     }
-}
+};

@@ -1,13 +1,15 @@
-const express = require('express');
-const cfg = require('./cfg');
-const Match = require('./Match.js');
+import express from 'express';
+import cfg from './cfg.js';
+import Match from './Match.js';
+import { Server } from 'socket.io';
+import proxy from 'express-http-proxy';
+import * as pieces from '../src/Match/pieces/index.js';
 const codeLength = 4;
 const codeChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 var app = express();
 
 if (cfg.dev == true) {
-    const proxy = require('express-http-proxy');
     app.use('/', proxy('http://localhost:3000'));
 } else {
     app.use('/', express.static(__dirname + '/../build'));
@@ -17,7 +19,7 @@ const server = app.listen(cfg.port, () => {
     console.log(`Web server started on port ${cfg.port}.`);
 });
 
-const io = require('socket.io')(server);
+const io = new Server(server);
 io.on('connect', socket => {
     socket.ingame = false;
     socket.place = null;
@@ -46,6 +48,29 @@ io.on('connect', socket => {
                 socket.emit('err', 'That match is full.')
         } else
             socket.emit('err', 'No match with that code exists.');
+    });
+
+    socket.on('place', (x, y, toPlace) => {
+        if (
+            socket.ingame
+            && Number.isInteger(x)
+            && x >= 0
+            && x < matches[socket.ingame].width
+            && Number.isInteger(y)
+            && y >= 0
+            && y < matches[socket.ingame].height
+            && (
+                toPlace == null
+                || (
+                    toPlace.length == 2
+                    && Object.keys(pieces).includes(toPlace[0])
+                    && [0, 1].includes(toPlace[1])
+                )
+            )
+        ) {
+            matches[socket.ingame].board[y][x] = toPlace;
+            matches[socket.ingame].emit('placed', x, y, toPlace);
+        }
     });
 
     socket.on('disconnect', () => {

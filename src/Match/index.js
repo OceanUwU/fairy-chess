@@ -20,7 +20,7 @@ const useStyles = makeStyles({
     boardContainer: {
         display: 'flex',
         height: '100%',
-        width: '100%',
+        //flexGrow: 1,
         alignItems: 'center',
     },
 
@@ -28,6 +28,35 @@ const useStyles = makeStyles({
         position: 'relative',
         width: '100%',
         height: '100%',
+        //flexGrow: 1,
+    },
+
+    pieceMenu: {
+        //flexGrow: 1,
+        overflowY: 'scroll',
+        border: '1px solid lightgrey',
+        width: 160,
+        maxHeight: '50vh',
+        borderTopLeftRadius: 5,
+        borderBottomLeftRadius: 5,
+
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-evenly',
+        alignItems: 'stretch',
+        padding: '5px 0',
+
+        '& img': {
+            width: 60,
+            height: 'auto',
+            cursor: 'pointer',
+
+            '&.selected': {
+                background: 'lightgrey',
+                borderRadius: 8,
+            }
+        },
     },
 
     actions: {
@@ -62,6 +91,7 @@ export default function Match(props) {
                         <IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><BrushIcon fontSize="small" /></IconButton>
                     </div>
                 </div>
+                {props.matchInfo.started ? null : <div className={classes.pieceMenu} id="pieceMenu" />}
             </div>
             <Typography>room code: {props.matchInfo.code}</Typography>
         </div>

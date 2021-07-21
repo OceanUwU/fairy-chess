@@ -4,6 +4,7 @@ import { Typography } from '@material-ui/core';
 import socketIOClient from 'socket.io-client';
 import Match from './Match/';
 import showDialog from './showDialog.js';
+import * as gameplay from './Match/gameplay.js';
 
 var socket = socketIOClient('', {transports: ['websocket']});
 
@@ -15,5 +16,6 @@ socket.on('err', (err, title='Error!') => showDialog({title}, <Typography>{err}<
 
 socket.on('join', matchInfo => ReactDOM.render(<Match matchInfo={matchInfo} />, document.getElementById('root')));
 
+socket.on('placed', (x, y, piece) => gameplay.place(x, y, piece));
 
 export default socket;
