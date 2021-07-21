@@ -44,7 +44,7 @@ async function drawPieces() {
 
     for (let x = 0; x < matchInfo.board[0].length; x++) {
         for (let y = 0; y < matchInfo.board.length; y++) {
-            let piece = matchInfo.board[y][x];
+            let piece = matchInfo.black ? matchInfo.board[matchInfo.board.length-y-1][matchInfo.board[0].length-x-1] : matchInfo.board[y][x];
             if (piece != null) {
                 paper.pieces.ctx.drawImage(pieceImages[piece[0]][piece[1]], x * squareSize, y * squareSize, squareSize, squareSize);
             }

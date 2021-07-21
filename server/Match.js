@@ -31,9 +31,10 @@ module.exports = class Match {
         this.connected.forEach(socket => eval(`socket.emit(${args})`));
     }
 
-    get matchInfo() {
+    matchInfo(socket) {
         return {
             ...Object.fromEntries(['code', 'width', 'height', 'board', 'started'].map(key => [key, this[key]])),
+            black: socket.player == 'B',
         }
     }
 
@@ -42,7 +43,7 @@ module.exports = class Match {
             socket.ingame = this.code;
             socket.player = this.playerA == null ? 'A' : 'B';
             this[`player${socket.player}`] = socket;
-            socket.emit('join', this.matchInfo);
+            socket.emit('join', this.matchInfo(socket));
         } else
             socket.emit('err', 'This match is full!');
     }
