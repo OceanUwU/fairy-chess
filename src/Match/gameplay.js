@@ -48,7 +48,7 @@ async function recolorImages() {
 }
 
 function drawGrid() {
-    if (size[0] != matchInfo.width && size[1] != matchInfo.height) {
+    if (size[0] != matchInfo.width || size[1] != matchInfo.height) {
         Object.values(paper).forEach(layer => {
             layer.canvas.width = squareSize * matchInfo.width;
             layer.canvas.height = squareSize * matchInfo.height;
@@ -70,9 +70,9 @@ async function drawPieces() {
 
     paper.pieces.ctx.clearRect(0, 0, paper.pieces.canvas.width, paper.pieces.canvas.height);
 
-    for (let x = 0; x < matchInfo.board[0].length; x++) {
-        for (let y = 0; y < matchInfo.board.length; y++) {
-            let piece = matchInfo.black ? matchInfo.board[matchInfo.board.length-y-1][matchInfo.board[0].length-x-1] : matchInfo.board[y][x];
+    for (let x = 0; x < matchInfo.width; x++) {
+        for (let y = 0; y < matchInfo.height; y++) {
+            let piece = matchInfo.black ? matchInfo.board[matchInfo.height-y-1][matchInfo.width-x-1] : matchInfo.board[y][x];
             if (piece != null) {
                 paper.pieces.ctx.drawImage(pieceImages[piece[0]][piece[1]], x * squareSize, y * squareSize, squareSize, squareSize);
             }
@@ -166,10 +166,19 @@ function place(x, y, piece) {
     drawPieces();
 };
 
+function resize(width, height, board) {
+    console.log(width, height, board)
+    matchInfo.width = width;
+    matchInfo.height = height;
+    matchInfo.board = board;
+    drawGrid();
+}
+
 export {
     start,
     recolorImages,
     drawGrid,
     drawPieces,
     place,
+    resize,
 };

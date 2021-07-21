@@ -4,8 +4,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import layers from './layers.js';
 import { start } from './gameplay.js';
 import BrushIcon from '@material-ui/icons/Brush';
+import GridOnIcon from '@material-ui/icons/GridOn';
 import showDialog from '../showDialog.js';
 import Customiser from './Customiser.js';
+import BoardSizeEditor from './BoardSizeEditor';
 
 const useStyles = makeStyles({
     root: {
@@ -61,6 +63,9 @@ const useStyles = makeStyles({
 
     actions: {
         display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'left',
+        width: 30,
     },
 
     layer: {
@@ -89,6 +94,7 @@ export default function Match(props) {
                     {layers.map(layer => <canvas id={`${layer}Layer`} key={layer} className={classes.layer} />)}
                     <div className={classes.actions}>
                         <IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><BrushIcon fontSize="small" /></IconButton>
+                        <IconButton onClick={() => showDialog({title: 'Edit board size'}, <BoardSizeEditor />)} size="small"><GridOnIcon fontSize="small" /></IconButton>
                     </div>
                 </div>
                 {props.matchInfo.started ? null : <div className={classes.pieceMenu} id="pieceMenu" />}

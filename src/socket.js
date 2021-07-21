@@ -17,5 +17,6 @@ socket.on('err', (err, title='Error!') => showDialog({title}, <Typography>{err}<
 socket.on('join', matchInfo => ReactDOM.render(<Match matchInfo={matchInfo} />, document.getElementById('root')));
 
 socket.on('placed', (x, y, piece) => gameplay.place(x, y, piece));
+socket.on('resize', (width, height, board) => gameplay.resize(width, height, board));
 
 export default socket;
