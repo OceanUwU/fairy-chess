@@ -37,6 +37,18 @@ io.on('connect', socket => {
         match.join(socket);
     });
 
+    socket.on('joinMatch', code => {
+        code = code.toUpperCase();
+        console.log(code, matches[code]);
+        if (matches[code]) {
+            if (matches[code].connected.length < 2)
+                matches[code].join(socket);
+            else
+                socket.emit('err', 'That match is full.')
+        } else
+            socket.emit('err', 'No match with that code exists.');
+    });
+
     socket.on('disconnect', () => {
         if (socket.ingame) {
             matches[socket.ingame][`player${socket.player}`] = null;
