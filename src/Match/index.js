@@ -90,7 +90,7 @@ export default function Match(props) {
         <div className={classes.root}>
             <Typography>room code: {props.matchInfo.code}</Typography>
             <div className={classes.boardContainer}>
-                <div className={classes.board}>
+                <div className={classes.board} id="board">
                     {layers.map(layer => <canvas id={`${layer}Layer`} key={layer} className={classes.layer} />)}
                     <div className={classes.actions}>
                         <IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><BrushIcon fontSize="small" /></IconButton>

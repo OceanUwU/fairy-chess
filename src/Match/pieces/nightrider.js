@@ -1,7 +1,7 @@
+import fn from './fn.js';
+
 export default {
     name: 'nightrider',
-    desc: 'The nightrider can move along any knight path any number of times.',
-    moves: (board, position, black, history) => {
-
-    }
+    desc: '(1,2)-rider',
+    moves: state => fn.generic(state, [1, 2], true),
 };

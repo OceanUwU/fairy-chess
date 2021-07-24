@@ -13,6 +13,7 @@ export default class Match {
             Array(8).fill(null).map(p => ['pawn', 0]),
             ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'].map(p => [p, 0]),
         ];
+        this.history = [];
         this.width = this.board[0].length;
         this.height = this.board.length;
         this.started = false;

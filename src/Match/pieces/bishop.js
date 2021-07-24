@@ -1,7 +1,7 @@
+import fn from './fn.js';
+
 export default {
     name: 'bishop',
     desc: 'Can move any number of squares diagonally.',
-    moves: (board, position, black, history) => {
-
-    }
+    moves: state => fn.generic(state, [1, 1], true),
 };

@@ -1,1 +1,1 @@
-export default ['grid', 'possibilities', 'check', 'pieces', 'toPlace'];
+export default ['grid', 'possibilities', 'check', 'pieces', 'hold', 'toPlace'];
