@@ -13,6 +13,7 @@ export {default as brick} from './brick.js';
 export {default as camel} from './camel.js';
 export {default as centaur} from './centaur.js';
 export {default as dabbaba} from './dabbaba.js';
+export {default as double} from './double.js';
 export {default as dummy} from './dummy.js';
 export {default as empress} from './empress.js';
 export {default as ferz} from './ferz.js';
