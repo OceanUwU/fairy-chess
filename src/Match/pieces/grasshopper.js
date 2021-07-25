@@ -9,7 +9,7 @@ export default {
         console.log(fn.getDirections);
         console.log([...fn.getDirections([1,0]), ...fn.getDirections([1,1])]);
 
-        for (let direction of [...fn.getDirections([1,0]), ...fn.getDirections([1,1])]) {
+        for (let direction of [...fn.getDirections([1,0]), ...fn.getDirections([0,1]), ...fn.getDirections([1,1])]) {
             let position = state.position;
             while (true) {
                 let location = [position[0]+direction[0], position[1]+direction[1]];
