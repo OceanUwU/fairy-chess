@@ -18,5 +18,11 @@ socket.on('join', matchInfo => ReactDOM.render(<Match matchInfo={matchInfo} />, 
 
 socket.on('placed', (x, y, piece) => gameplay.place(x, y, piece));
 socket.on('resize', (width, height, board) => gameplay.resize(width, height, board));
+socket.on('start', () => gameplay.start());
+
+socket.on('pickup', (y, x) => gameplay.opponentPickUp(y, x));
+socket.on('hold', (x, y) => gameplay.opponentHold(x, y));
+socket.on('drop', (x, y) => gameplay.opponentDrop(x, y));
+socket.on('move', (origin, destination) => gameplay.move(origin, destination));
 
 export default socket;

@@ -1,13 +1,15 @@
 import React from 'react';
-import { Typography, IconButton } from '@material-ui/core';
+import { Typography, IconButton, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import layers from './layers.js';
-import { start } from './gameplay.js';
+import { setup } from './gameplay.js';
 import BrushIcon from '@material-ui/icons/Brush';
 import GridOnIcon from '@material-ui/icons/GridOn';
+import ShareIcon from '@material-ui/icons/Share';
 import showDialog from '../showDialog.js';
 import Customiser from './Customiser.js';
 import BoardSizeEditor from './BoardSizeEditor';
+import socket from '../socket.js';
 
 const useStyles = makeStyles({
     root: {
@@ -26,6 +28,32 @@ const useStyles = makeStyles({
         alignItems: 'center',
     },
 
+    topBar: {
+        display: 'flex',
+        alignItems: 'center',
+
+        '& *': {
+            flexGrow: 1,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+        }
+    },
+
+    bottomBar: {
+        display: 'flex',
+        alignItems: 'center',
+
+        '& *': {
+            flexGrow: 1,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+        }
+    },
+
     board: {
         position: 'relative',
         width: '100%',
@@ -33,14 +61,22 @@ const useStyles = makeStyles({
         //flexGrow: 1,
     },
 
-    pieceMenu: {
-        //flexGrow: 1,
-        overflowY: 'scroll',
-        border: '1px solid lightgrey',
+    setupBar: {
         width: 160,
+        border: '1px solid lightgrey',
         maxHeight: '50vh',
         borderTopLeftRadius: 5,
         borderBottomLeftRadius: 5,
+        background: 'white',
+        
+        display: 'flex',
+        flexDirection: 'column',
+    },
+
+    pieceMenu: {
+        //flexGrow: 1,
+        overflowY: 'scroll',
+        width: '100%',
 
         display: 'flex',
         flexDirection: 'row',
@@ -80,26 +116,89 @@ const useStyles = makeStyles({
 
 export default function Match(props) {
     const classes = useStyles();
+    let [turn, setTurn] = React.useState(props.matchInfo.turn);
+    let [time, setTime] = React.useState([0, 0]);
+
+    let timer;
+
+    let timerTick = () => {
+        let newTime = [...time];
+        if (props.matchInfo.started) {
+            newTime[turn]++;
+        } 
+        setTime(newTime);
+    }
 
     let customiser = <Customiser />;
     React.useEffect(() => {
-        start(props.matchInfo);
+        setup(props.matchInfo);
+
+        socket.on('start', () => {
+            props.matchInfo.started = true;
+            setTurn(turn);
+        });
+        
+        socket.on('move', () => {
+            setTurn(Number(!(Boolean(turn))));
+            turn = Number(!(Boolean(turn)));
+    
+            clearTimeout(timer);
+            timer = setTimeout(timerTick, 1000);
+        });
+
+        return () => {
+            socket.off('start');
+            socket.off('move');
+        }
     }, []);
+
+    React.useEffect(() => {
+        timer = setTimeout(timerTick, 1000);
+        return () => clearTimeout(timer);
+    }, [time]);
+
+    let isYou = {textDecoration: 'underline'};
+    let isTurn = {fontSize: '1.5rem', fontWeight: 'bold'};
 
     return (
         <div className={classes.root}>
-            <Typography>room code: {props.matchInfo.code}</Typography>
+            <div className={classes.topBar}>
+                <div style={{background: 'white'}}>
+                    <Typography variant="caption" style={props.matchInfo.black ? {} : isYou}>White</Typography>
+                    <Typography style={turn == 0 ? isTurn : {}}>{Math.floor(time[0]/60)}:{String(time[0]%60).padStart(2,'0')}</Typography>
+                </div>
+                <div style={{background: 'lightgrey', flexGrow: 0, padding: '0 20px'}}>
+                    <Typography variant="caption">Room Code</Typography>
+                    <Typography variant="h5">{props.matchInfo.code}</Typography>
+                </div>
+                <div style={{background: 'black', color: 'white'}}>
+                    <Typography variant="caption" style={props.matchInfo.black ? isYou : {}}>Black</Typography>
+                    <Typography style={turn == 1 ? isTurn : {}}>{Math.floor(time[1]/60)}:{String(time[1]%60).padStart(2,'0')}</Typography>
+                </div>
+            </div>
+
+
             <div className={classes.boardContainer}>
                 <div className={classes.board} id="board">
                     {layers.map(layer => <canvas id={`${layer}Layer`} key={layer} className={classes.layer} />)}
                     <div className={classes.actions}>
                         <IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><BrushIcon fontSize="small" /></IconButton>
                         <IconButton onClick={() => showDialog({title: 'Edit board size'}, <BoardSizeEditor />)} size="small"><GridOnIcon fontSize="small" /></IconButton>
+                        <IconButton size="small"><ShareIcon fontSize="small" /></IconButton>
                     </div>
                 </div>
-                {props.matchInfo.started ? null : <div className={classes.pieceMenu} id="pieceMenu" />}
+                {props.matchInfo.started ? null : (
+                    <div className={classes.setupBar} id="setupBar">
+                        <div className={classes.pieceMenu} id="pieceMenu" />
+                        <Button variant="contained" color="primary" size="small" onClick={() => socket.emit('start')}>Start</Button>
+                    </div>
+                )}
             </div>
-            <Typography>room code: {props.matchInfo.code}</Typography>
+
+
+            <div className={classes.bottomBar}>
+
+            </div>
         </div>
     );
 }

@@ -1,8 +1,8 @@
 export default class Match {
     constructor(code) {
         this.code = code;
-        this.playerA = null;
-        this.playerB = null;
+        this.player0 = null;
+        this.player1 = null;
         this.board = [
             ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'].map(p => [p, 1]),
             Array(8).fill(null).map(p => ['pawn', 1]),
@@ -13,6 +13,7 @@ export default class Match {
             Array(8).fill(null).map(p => ['pawn', 0]),
             ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'].map(p => [p, 0]),
         ];
+        this.turn = 0;
         this.history = [];
         this.width = this.board[0].length;
         this.height = this.board.length;
@@ -20,7 +21,11 @@ export default class Match {
     }
 
     get players() {
-        return [this.playerA, this.playerB];
+        return [this.player0, this.player1];
+    }
+
+    opponent(num) {
+        return this.players[Number(!num)];
     }
 
     get connected() {
@@ -34,16 +39,17 @@ export default class Match {
 
     matchInfo(socket) {
         return {
-            ...Object.fromEntries(['code', 'width', 'height', 'board', 'started'].map(key => [key, this[key]])),
-            black: socket.player == 'B',
+            ...Object.fromEntries(['code', 'width', 'height', 'board', 'started', 'turn'].map(key => [key, this[key]])),
+            black: socket.num == 1,
         }
     }
 
     join(socket) {
         if (this.connected.length < 2) {
             socket.ingame = this.code;
-            socket.player = this.playerA == null ? 'A' : 'B';
-            this[`player${socket.player}`] = socket;
+            socket.match = this;
+            socket.num = this.player0 == null ? 0 : 1;
+            this[`player${socket.num}`] = socket;
             socket.emit('join', this.matchInfo(socket));
         } else
             socket.emit('err', 'This match is full!');

@@ -19,6 +19,8 @@ var holding = null;
 var holdingLocation = null;
 var holdingState;
 var holdingMoves;
+var opponentHolding = null;
+var opponentHoldingLocation = null;
 
 const hexToRgb = hex =>
     hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
@@ -99,7 +101,10 @@ function mouseCanvasLocation(event) {
     let r = event.target.getBoundingClientRect();
 
     if (event.touches) {
-        event = event.touches[0];
+        if (event.touches.length > 0)
+            event = event.touches[0];
+        else
+            event = event.changedTouches[0];
         event.layerX = event.clientX - r.left;
         event.layerY = event.clientY - r.top;
     }
@@ -150,26 +155,30 @@ function mouseGridLocation(event, black=false) {
     }
 }
 
-async function holdUpdate() {
-    paper.hold.ctx.clearRect(0, 0, paper.hold.canvas.width, paper.hold.canvas.height);
+async function holdUpdate(opponent=false) {
+    let layer = paper[opponent ? 'opponentHold' : 'hold'];
+    let hold = opponent ? opponentHolding : holding;
+    let holdLocation = opponent ? opponentHoldingLocation : holdingLocation;
+
+    layer.ctx.clearRect(0, 0, layer.canvas.width, layer.canvas.height);
     paper.possibilities.ctx.clearRect(0, 0, paper.possibilities.canvas.width, paper.possibilities.canvas.height);
 
-    document.body.style.cursor = holding === null ? 'auto' : 'grabbing';
+    document.body.style.cursor = hold === null ? 'auto' : 'grabbing';
 
-    if (holding !== null) {
+    if (hold !== null) {
         //make piece transparent
-        paper.hold.ctx.globalAlpha = 0.5;
-        paper.hold.ctx.fillStyle = (((holding[1] % 2) ? holding[0]+1 : holding[0]) % 2) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
-        paper.hold.ctx.fillRect(holding[1] * squareSize, holding[0] * squareSize, squareSize, squareSize);
+        layer.ctx.globalAlpha = 0.5;
+        layer.ctx.fillStyle = (((hold[1] % 2) ? hold[0]+1 : hold[0]) % 2) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
+        layer.ctx.fillRect(hold[1] * squareSize, hold[0] * squareSize, squareSize, squareSize);
     
         //draw held piece above board
-        paper.hold.ctx.globalAlpha = 1;
+        layer.ctx.globalAlpha = 1;
         pieceImages = await pieceImages;
-        let piece = matchInfo.black ? matchInfo.board[matchInfo.width-holding[0]-1][matchInfo.height-holding[1]-1] : matchInfo.board[holding[0]][holding[1]];
-        paper.hold.ctx.drawImage(pieceImages[piece[0]][piece[1]], holdingLocation[0], holdingLocation[1]);
+        let piece = matchInfo.black ? matchInfo.board[matchInfo.width-hold[0]-1][matchInfo.height-hold[1]-1] : matchInfo.board[hold[0]][hold[1]];
+        layer.ctx.drawImage(pieceImages[piece[0]][piece[1]], holdLocation[0], holdLocation[1]);
 
         //draw move possibilities
-        if (moveImg.complete && takeImg.complete) {
+        if (!opponent && moveImg.complete && takeImg.complete) {
             paper.possibilities.ctx.globalAlpha = 0.3;
             for (let move of holdingMoves) {
                 let take = matchInfo.board[move[0]][move[1]] != null && matchInfo.board[move[0]][move[1]][1] != matchInfo.black;
@@ -182,7 +191,7 @@ async function holdUpdate() {
     }
 }
 
-function start(initialMatchInfo) {
+function setup(initialMatchInfo) {
     matchInfo = initialMatchInfo;
 
     paper = Object.fromEntries(layers.map(layer => {
@@ -199,6 +208,8 @@ function start(initialMatchInfo) {
     let board = document.getElementById('board');
 
     board.addEventListener('mousemove', async event => {
+        if (event.target.tagName != 'CANVAS') return;
+
         if (toPlace !== false) {
             paper.toPlace.ctx.clearRect(0, 0, paper.toPlace.canvas.width, paper.toPlace.canvas.height);
             let location = mouseGridLocation(event);
@@ -222,6 +233,7 @@ function start(initialMatchInfo) {
     });
     board.addEventListener('mouseleave', () => paper.toPlace.ctx.clearRect(0, 0, paper.toPlace.canvas.width, paper.toPlace.canvas.height));
     let place = event => {
+        if (event.target.tagName != 'CANVAS') return;
 
         event.preventDefault();
         if (toPlace !== false) {
@@ -234,6 +246,10 @@ function start(initialMatchInfo) {
     board.addEventListener('touchstart', place);
 
     let selectPiece = event => {
+        if (event.target.tagName != 'CANVAS') return;
+        console.log(matchInfo.turn, matchInfo.black);
+        if (matchInfo.started && matchInfo.turn != matchInfo.black) return
+
         event.preventDefault();
         if (toPlace === false) {
             let location = mouseGridLocation(event);
@@ -242,6 +258,13 @@ function start(initialMatchInfo) {
                 if (piece != null && piece[1] == matchInfo.black) {
                     holding = [location.y, location.x];
                     holdingLocation = canvasPos(mouseCanvasLocation(event));
+                    if (matchInfo.started) {
+                        if (matchInfo.black)
+                            socket.emit('pickup', matchInfo.height-location.y-1, matchInfo.width-location.x-1);
+                        else
+                            socket.emit('pickup', holding[0], holding[1]);
+                        socket.emit('hold', holdingLocation[0], holdingLocation[1]);
+                    }
                     holdingMoves = pieces[piece[0]].moves({
                         board: matchInfo.board,
                         black: matchInfo.black,
@@ -258,12 +281,18 @@ function start(initialMatchInfo) {
     board.addEventListener('touchstart', selectPiece);
 
     let moveSelection = event => {
+        if (event.target.tagName != 'CANVAS') return;
+
         if (toPlace === false && holding != null) {
             let location = mouseCanvasLocation(event);
             if (location != null) {
+                let holdingLocationBefore = JSON.stringify(holdingLocation);
                 holdingLocation = canvasPos(mouseCanvasLocation(event));
+                if (holdingLocationBefore != JSON.stringify(holdingLocation) && matchInfo.started)
+                    socket.emit('hold', holdingLocation[0], holdingLocation[1]);
             } else {
                 holding = null;
+                socket.emit('cancelHold');
             }
             holdUpdate();
         }
@@ -274,18 +303,28 @@ function start(initialMatchInfo) {
     let cancelSelection = event => {
         holding = null;
         holdUpdate();
+        socket.emit('cancelHold');
     };
     board.addEventListener('mouseleave', cancelSelection);
     board.addEventListener('touchcancel', cancelSelection);
 
     let dropSelection = event => {
-        let location = mouseGridLocation(event);
-        if (location != null) {
-            
-            holding = null;
-            holdUpdate();
+        if (event.target.tagName != 'CANVAS') return;
 
-            document.body.style.cursor = matchInfo.board[location.y][location.x] != null && matchInfo.board[location.y][location.x][1] == matchInfo.black ? 'grab' : 'auto';
+        if (toPlace === false && holding != null) {
+            let location = mouseGridLocation(event);
+            if (location != null) {
+                if (matchInfo.started && matchInfo.turn == matchInfo.black) {
+                    let realLocation = matchInfo.black ? [matchInfo.height-location.y-1, matchInfo.width-location.x-1] : [location.y, location.x];
+                    socket.emit('drop', matchInfo.black ? [matchInfo.width-holding[0]-1, matchInfo.height-holding[1]-1] : holding, realLocation);
+                }
+                
+                holding = null;
+                holdUpdate();
+                socket.emit('cancelHold');
+    
+                document.body.style.cursor = matchInfo.board[location.y][location.x] != null && matchInfo.board[location.y][location.x][1] == matchInfo.black ? 'grab' : 'auto';
+            }
         }
     };
     board.addEventListener('mouseup', dropSelection);
@@ -311,11 +350,44 @@ function resize(width, height, board) {
     drawGrid();
 }
 
+function start() {
+    matchInfo.started = true;
+    toPlace = false;
+}
+
+function opponentPickUp(y, x) {
+    opponentHolding = [y, x];
+}
+
+function opponentHold(x, y) {
+    if (opponentHolding == null) return;
+    opponentHoldingLocation = [squareSize*(matchInfo.width-1)-x, squareSize*(matchInfo.height-1)-y];
+    holdUpdate(true);
+}
+
+function opponentDrop() {
+    opponentHolding = null;
+    holdUpdate(true);
+}
+
+function move(origin, destination) {
+    matchInfo.board[destination[0]][destination[1]] = matchInfo.board[origin[0]][origin[1]];
+    matchInfo.board[origin[0]][origin[1]] = null;
+    drawPieces();
+    
+    matchInfo.turn = Number(!(Boolean(matchInfo.turn)));
+}
+
 export {
-    start,
+    setup,
     recolorImages,
     drawGrid,
     drawPieces,
     place,
     resize,
+    start,
+    opponentPickUp,
+    opponentHold,
+    opponentDrop,
+    move,
 };
