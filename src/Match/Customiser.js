@@ -18,7 +18,7 @@ const pieces = () => {
     recolorImages();
     drawPieces();
 };
-const options = [['a', 'White player', '#f2f0dc', pieces], ['b', 'Black player', '#5c5a58', pieces], ['c', 'Grid\'s 1st', '#ff75ed', drawGrid], ['d', 'Grid\'s 2nd', '#ffc9f8', drawGrid]];
+const options = [['a', 'White player', '#f2f0dc', pieces], ['b', 'Black player', '#5c5a58', pieces], ['c', 'Grid\'s 1st', '#ff75ed', drawGrid], ['d', 'Grid\'s 2nd', '#ffc9f8', drawGrid], ['previousMove', 'Previous move highlight', '#ff6c6c', drawGrid]];
 for (let i of options)
     if (!localStorage.hasOwnProperty(`fc-color-${i[0]}`))
         localStorage[`fc-color-${i[0]}`] = i[2];

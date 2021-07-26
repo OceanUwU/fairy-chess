@@ -21,6 +21,7 @@ var holdingState;
 var holdingMoves;
 var opponentHolding = null;
 var opponentHoldingLocation = null;
+var previousMove = [];
 
 const hexToRgb = hex =>
     hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
@@ -79,6 +80,17 @@ function drawGrid() {
             paper.grid.ctx.fillStyle = (((x % 2) ? y+1 : y) % 2) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
             paper.grid.ctx.fillRect(x * squareSize, y * squareSize, squareSize, squareSize);
         }
+    }
+
+    for (let location of JSON.parse(JSON.stringify(previousMove))) {
+        if (matchInfo.black) {
+            location[0] = matchInfo.height-location[0]-1;
+            location[1] = matchInfo.width-location[1]-1;
+        }
+        paper.grid.ctx.globalAlpha = 0.75;
+        paper.grid.ctx.fillStyle = localStorage['fc-color-previousMove'];
+        paper.grid.ctx.fillRect(location[1] * squareSize, location[0] * squareSize, squareSize, squareSize);
+        paper.grid.ctx.globalAlpha = 1;
     }
 }
 
@@ -373,6 +385,8 @@ function opponentDrop() {
 function move(origin, destination) {
     matchInfo.board[destination[0]][destination[1]] = matchInfo.board[origin[0]][origin[1]];
     matchInfo.board[origin[0]][origin[1]] = null;
+    previousMove = [origin, destination];
+    drawGrid();
     drawPieces();
     
     matchInfo.turn = Number(!(Boolean(matchInfo.turn)));
