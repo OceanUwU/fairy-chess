@@ -1,3 +1,5 @@
+import * as pieces from './index.js';
+
 function rotateState(state) {
     if (state.black) {
         const w = state.board[0].length;
@@ -78,9 +80,53 @@ function removeDuplicates(moves) {
     return moves.map(i => JSON.stringify(i)).filter((value, index, self) => self.indexOf(value) === index).map(i => JSON.parse(i));
 }
 
-function removeInvalidMoves(moves) {
+function validMoves(state) {
+    let moves = pieces[state.board[state.position[0]][state.position[1]][0]].moves(state);
     moves = removeDuplicates(moves);
+    var i = moves.length;
+    while (i--) {
+        let move = moves[i];
+        let board = JSON.parse(JSON.stringify(state.board));
+        board[move[0]][move[1]] = board[state.position[0]][state.position[1]];
+        board[state.position[0]][state.position[1]] = null;
+        state.history.push([state.position, move]);
+        if (inCheck(board, state.history, Number(state.black))) { 
+            moves.splice(i, 1);
+        }
+        state.history.splice(-1); 
+    }
     return moves;
+}
+
+function inCheck(board, history, player) {
+    let kingLocation;
+    for (let y in board) {
+        for (let x in board[y]) {
+            let piece = board[y][x];
+            if (piece != null && piece[0] == 'king' && piece[1] == player) {
+                kingLocation = [y, x];
+            }
+        }
+    }
+
+    let checks = [];
+    for (let y in board) {
+        for (let x in board[y]) {
+            let piece = board[y][x];
+            if (piece != null && piece[1] != player) {
+                let position = [Number(y), Number(x)];
+                if (pieces[piece[0]].moves({
+                    board: board,
+                    black: !(Boolean(player)),
+                    position,
+                    history: history,
+                }).some(move => move[0] == kingLocation[0] && move[1] == kingLocation[1]))
+                    checks.push(position);
+            }
+        }
+    }
+
+    return checks.length == 0 ? false : checks;
 }
 
 export default {
@@ -89,5 +135,6 @@ export default {
     fix,
     getDirections,
     rotateMoves,
-    removeInvalidMoves,
+    validMoves,
+    inCheck,
 };

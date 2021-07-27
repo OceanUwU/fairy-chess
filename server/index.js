@@ -4,6 +4,7 @@ import Match from './Match.js';
 import { Server } from 'socket.io';
 import proxy from 'express-http-proxy';
 import * as pieces from '../src/Match/pieces/index.js';
+import pieceFn from '../src/Match/pieces/fn.js';
 const codeLength = 4;
 const maxBoardSize = 16;
 const codeChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -108,8 +109,11 @@ io.on('connect', socket => {
         if (socket.match && !socket.match.started) {
             let kings = [].concat.apply([], socket.match.board).filter(p => p && p[0] == 'king');
             if (kings.length == 2 && kings[0][1] != kings[1][1]) { //if there is exactly 1 king on each team
-                socket.match.started = true;
-                socket.match.emit('start');
+                if (!(pieceFn.inCheck(socket.match.board, [], 0) || pieceFn.inCheck(socket.match.board, [], 1))) {
+                    socket.match.started = true;
+                    socket.match.emit('start');
+                } else
+                    socket.emit('err', 'You can\'t start the game in check!');
             } else
                 socket.emit('err', 'Each team must have exactly 1 king.', 'Invalid board!');
         }
@@ -162,20 +166,6 @@ io.on('connect', socket => {
     });
 
     socket.on('drop', (origin, destination) => {
-        console.log(
-            origin, destination, socket.match.started
-            , socket.match.turn == socket.num
-            , [origin, destination].every(loc => //both locations are valid locations on the board
-                Array.isArray(loc)
-                && loc.length == 2
-                && loc.every((coord, index) =>
-                    coord >= 0
-                    && coord < socket.match[['height', 'width'][index]]
-                )
-            )
-            , socket.match.board[origin[0]][origin[1]] //origin is not an empty tile
-            , socket.match.board[origin[0]][origin[1]][1], socket.num //piece is owned by mover
-        )
         if (
             socket.match
             && socket.match.started
@@ -190,7 +180,7 @@ io.on('connect', socket => {
             )
             && socket.match.board[origin[0]][origin[1]] != null //origin is not an empty tile
             && socket.match.board[origin[0]][origin[1]][1] == socket.num //piece is owned by mover
-            && pieces[socket.match.board[origin[0]][origin[1]][0]].moves({
+            && pieceFn.validMoves({
                 board: socket.match.board,
                 black: socket.num == 1,
                 position: origin,
@@ -202,15 +192,37 @@ io.on('connect', socket => {
                 opponent.emit('drop');
 
             let piece = socket.match.board[origin[0]][origin[1]];
-            console.log(piece);
             socket.match.board[destination[0]][destination[1]] = piece;
             socket.match.board[origin[0]][origin[1]] = null;
-            console.log(socket.match.board);
 
-            socket.match.history.push(null);
+            socket.match.history.push([origin, destination]);
             
             socket.match.turn = Number(!(Boolean(socket.match.turn)));
             socket.match.emit('move', origin, destination);
+
+            let moveAvailable = false;
+            for (let y in socket.match.board) {
+                for (let x in socket.match.board[y]) {
+                    let piece = socket.match.board[y][x];
+                    if (piece != null && piece[1] == socket.match.turn && pieceFn.validMoves({
+                        board: socket.match.board,
+                        black: socket.match.turn == 1,
+                        position: [Number(y), Number(x)],
+                        history: socket.match.history,
+                    }).length > 0) {
+                        moveAvailable = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!moveAvailable) {
+                if (pieceFn.inCheck(socket.match.board, socket.match.history, socket.match.turn)) {
+                    socket.match.emit('err', `${socket.match.turn == 1 ? 'White' : 'Black'} wins!`, 'Checkmate!');
+                } else {
+                    socket.match.emit('err', `Draw.`, 'Stalemate!');
+                }
+            } 
         }
     });
 

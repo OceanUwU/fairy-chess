@@ -94,6 +94,10 @@ function drawGrid() {
     }
 }
 
+function tileCentre(n) {
+    return (n+0.5) * squareSize;
+}
+
 async function drawPieces() {
     pieceImages = await pieceImages;
 
@@ -104,6 +108,53 @@ async function drawPieces() {
             let piece = matchInfo.black ? matchInfo.board[matchInfo.height-y-1][matchInfo.width-x-1] : matchInfo.board[y][x];
             if (piece != null) {
                 paper.pieces.ctx.drawImage(pieceImages[piece[0]][piece[1]], x * squareSize, y * squareSize, squareSize, squareSize);
+            }
+        }
+    }
+
+    if (matchInfo.started) {
+        paper.check.ctx.clearRect(0, 0, paper.check.canvas.width, paper.check.canvas.height);
+
+        let checks = pieceFn.inCheck(matchInfo.board, matchInfo.history, matchInfo.turn);
+        console.log(checks);
+        if (checks) {
+            let kingLocation;
+            for (let y in matchInfo.board) {
+                for (let x in matchInfo.board[y]) {
+                    let piece = matchInfo.board[y][x];
+                    if (piece != null && piece[0] == 'king' && piece[1] == matchInfo.turn) {
+                        kingLocation = [Number(y), Number(x)];
+                    }
+                }
+            }
+            if (matchInfo.black) {
+                kingLocation[0] = matchInfo.height-kingLocation[0]-1;
+                kingLocation[1] = matchInfo.width-kingLocation[1]-1;
+            }
+    
+            let to = kingLocation.map(i => tileCentre(i));
+            paper.check.ctx.globalAlpha = 0.4;
+            paper.check.ctx.strokeStyle = localStorage['fc-color-checkIndicator'];
+            paper.check.ctx.lineWidth = 30;
+            for (let check of checks) {
+                if (matchInfo.black) {
+                    check[0] = matchInfo.height-check[0]-1;
+                    check[1] = matchInfo.width-check[1]-1;
+                }
+
+                let from = check.map(i => tileCentre(i));
+                paper.check.ctx.beginPath();
+                paper.check.ctx.moveTo(from[1], from[0]);
+                paper.check.ctx.lineTo(to[1], to[0]);
+                /*
+                let angle = Math.atan2(to[0] - from[0], to[1] - from[1]);
+                let headlen = 45;
+                paper.check.ctx.lineTo(to[1] - headlen * Math.cos(angle - Math.PI / 6), to[0] - headlen * Math.sin(angle - Math.PI / 6));
+                paper.check.ctx.moveTo(to[1], to[0]);
+                paper.check.ctx.lineTo(to[1] - headlen * Math.cos(angle + Math.PI / 6), to[0] - headlen * Math.sin(angle + Math.PI / 6));
+                */
+                paper.check.ctx.stroke();
+                console.log(from, to);
             }
         }
     }
@@ -259,7 +310,6 @@ function setup(initialMatchInfo) {
 
     let selectPiece = event => {
         if (event.target.tagName != 'CANVAS') return;
-        console.log(matchInfo.turn, matchInfo.black);
         if (matchInfo.started && matchInfo.turn != matchInfo.black) return
 
         event.preventDefault();
@@ -277,13 +327,12 @@ function setup(initialMatchInfo) {
                             socket.emit('pickup', holding[0], holding[1]);
                         socket.emit('hold', holdingLocation[0], holdingLocation[1]);
                     }
-                    holdingMoves = pieces[piece[0]].moves({
+                    holdingMoves = pieceFn.validMoves({
                         board: matchInfo.board,
                         black: matchInfo.black,
                         position: matchInfo.black ? [matchInfo.height-location.y-1, matchInfo.width-location.x-1] : holding,
                         history: matchInfo.history,
                     });
-                    holdingMoves = pieceFn.removeInvalidMoves(holdingMoves);
                     holdUpdate();
                 }
             }
@@ -385,11 +434,11 @@ function opponentDrop() {
 function move(origin, destination) {
     matchInfo.board[destination[0]][destination[1]] = matchInfo.board[origin[0]][origin[1]];
     matchInfo.board[origin[0]][origin[1]] = null;
+    matchInfo.history.push([origin, destination]);
+    matchInfo.turn = Number(!(Boolean(matchInfo.turn)));
     previousMove = [origin, destination];
     drawGrid();
     drawPieces();
-    
-    matchInfo.turn = Number(!(Boolean(matchInfo.turn)));
 }
 
 export {

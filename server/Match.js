@@ -39,7 +39,7 @@ export default class Match {
 
     matchInfo(socket) {
         return {
-            ...Object.fromEntries(['code', 'width', 'height', 'board', 'started', 'turn'].map(key => [key, this[key]])),
+            ...Object.fromEntries(['code', 'width', 'height', 'board', 'started', 'turn', 'history'].map(key => [key, this[key]])),
             black: socket.num == 1,
         }
     }
