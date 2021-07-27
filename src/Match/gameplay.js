@@ -325,7 +325,7 @@ function setup(initialMatchInfo) {
                             socket.emit('pickup', matchInfo.height-location.y-1, matchInfo.width-location.x-1);
                         else
                             socket.emit('pickup', holding[0], holding[1]);
-                        socket.emit('hold', holdingLocation[0], holdingLocation[1]);
+                        socket.emit('hold', Math.round(holdingLocation[0]), Math.round(holdingLocation[1]));
                     }
                     holdingMoves = pieceFn.validMoves({
                         board: matchInfo.board,
@@ -350,7 +350,7 @@ function setup(initialMatchInfo) {
                 let holdingLocationBefore = JSON.stringify(holdingLocation);
                 holdingLocation = canvasPos(mouseCanvasLocation(event));
                 if (holdingLocationBefore != JSON.stringify(holdingLocation) && matchInfo.started)
-                    socket.emit('hold', holdingLocation[0], holdingLocation[1]);
+                    socket.emit('hold', Math.round(holdingLocation[0]), Math.round(holdingLocation[1]));
             } else {
                 holding = null;
                 socket.emit('cancelHold');

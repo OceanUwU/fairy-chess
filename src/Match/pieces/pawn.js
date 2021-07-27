@@ -9,7 +9,7 @@ export default {
 
 
         //check forward x spaces and if theyre empty allow
-        for (let i = 1; i <= (true ? 2 : 1); i++) {
+        for (let i = 1; i <= (!state.history.some(h => h[1][0] == state.position[0] && h[1][1] == state.position[1]) ? 2 : 1); i++) {
             let look = i * direction;
             if (state.board.hasOwnProperty(state.position[0]+look) && state.board[state.position[0]+look][state.position[1]] == null)
                 moves.push([state.position[0]+look, state.position[1]]);

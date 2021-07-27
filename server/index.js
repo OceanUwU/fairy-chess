@@ -131,7 +131,6 @@ io.on('connect', socket => {
         ) {
             let opponent = socket.match.opponent(socket.num);
             if (opponent != null) {
-                console.log(opponent.num, [y, x], [socket.match.height-y-1, socket.match.width-x-1])
                 if (opponent.num == 0)
                     opponent.emit('pickup', y, x);
                 else
