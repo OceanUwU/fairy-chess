@@ -20,6 +20,8 @@ export {default as ferz} from './ferz.js';
 export {default as giraffe} from './giraffe.js';
 export {default as gnu} from './gnu.js';
 export {default as grasshopper} from './grasshopper.js';
+export {default as imposter} from './imposter.js';
+export {default as magnet} from './magnet.js';
 export {default as person} from './person.js';
 export {default as phoenix} from './phoenix.js';
 export {default as princess} from './princess.js';
