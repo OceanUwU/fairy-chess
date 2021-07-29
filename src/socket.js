@@ -6,7 +6,7 @@ import Match from './Match/';
 import showDialog from './showDialog.js';
 import * as gameplay from './Match/gameplay.js';
 
-var socket = socketIOClient('', {transports: ['websocket']});
+var socket = socketIOClient('');
 
 socket.on('connect', () => {
     console.log('connected to server!');

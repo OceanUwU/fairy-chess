@@ -2,10 +2,11 @@ import React from 'react';
 import { Typography, IconButton, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import layers from './layers.js';
-import { setup } from './gameplay.js';
-import BrushIcon from '@material-ui/icons/Brush';
+import { setup, setAvailablePromotions } from './gameplay.js';
+import FormatPaintIcon from '@material-ui/icons/FormatPaint';
 import GridOnIcon from '@material-ui/icons/GridOn';
 import ShareIcon from '@material-ui/icons/Share';
+import StarIcon from '@material-ui/icons/Star';
 import showDialog from '../showDialog.js';
 import Customiser from './Customiser.js';
 import BoardSizeEditor from './BoardSizeEditor';
@@ -182,9 +183,12 @@ export default function Match(props) {
                 <div className={classes.board} id="board">
                     {layers.map(layer => <canvas id={`${layer}Layer`} key={layer} className={classes.layer} />)}
                     <div className={classes.actions}>
-                        <IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><BrushIcon fontSize="small" /></IconButton>
-                        <IconButton onClick={() => showDialog({title: 'Edit board size'}, <BoardSizeEditor />)} size="small"><GridOnIcon fontSize="small" /></IconButton>
-                        <IconButton size="small"><ShareIcon fontSize="small" /></IconButton>
+                        <IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><FormatPaintIcon fontSize="small" /></IconButton>
+                        {props.matchInfo.started ? null : [
+                            <IconButton onClick={() => showDialog({title: 'Edit board size'}, <BoardSizeEditor />)} size="small"><GridOnIcon fontSize="small" /></IconButton>,
+                            <IconButton size="small"><ShareIcon fontSize="small" /></IconButton>,
+                            <IconButton onClick={setAvailablePromotions} size="small"><StarIcon fontSize="small" /></IconButton>,
+                        ]}
                     </div>
                 </div>
                 {props.matchInfo.started ? null : (

@@ -109,6 +109,8 @@ function inCheck(board, history, player) {
         }
     }
 
+    if (!kingLocation) return null;
+
     let checks = [];
     for (let y in board) {
         for (let x in board[y]) {

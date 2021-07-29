@@ -1,8 +1,13 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import layers from './layers.js';
 import * as pieces from './pieces';
 import pieceFn from './pieces/fn.js';
 import recolorAll from './pieceImages.js';
 import socket from '../socket.js';
+import Promotions from './Promotions.js';
+import Promote from './Promote.js';
+import showDialog from '../showDialog.js';
 
 var moveImg = new Image();
 moveImg.src = '/move.png';
@@ -22,6 +27,7 @@ var holdingMoves;
 var opponentHolding = null;
 var opponentHoldingLocation = null;
 var previousMove = [];
+var promotionsDialog;
 
 const hexToRgb = hex =>
     hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
@@ -369,7 +375,7 @@ function setup(initialMatchInfo) {
     board.addEventListener('mouseleave', cancelSelection);
     board.addEventListener('touchcancel', cancelSelection);
 
-    let dropSelection = event => {
+    let dropSelection = async event => {
         if (event.target.tagName != 'CANVAS') return;
 
         if (toPlace === false && holding != null) {
@@ -377,7 +383,19 @@ function setup(initialMatchInfo) {
             if (location != null) {
                 if (matchInfo.started && matchInfo.turn == matchInfo.black) {
                     let realLocation = matchInfo.black ? [matchInfo.height-location.y-1, matchInfo.width-location.x-1] : [location.y, location.x];
-                    socket.emit('drop', matchInfo.black ? [matchInfo.width-holding[0]-1, matchInfo.height-holding[1]-1] : holding, realLocation);
+                    let realHolding = matchInfo.black ? [matchInfo.width-holding[0]-1, matchInfo.height-holding[1]-1] : holding;
+                    if (location.y == 0 && ['pawn', 'weakpawn'].includes(matchInfo.board[holding[0]][holding[1]][0])) {
+                        pieceImages = await pieceImages;
+
+                        let diag = await showDialog({
+                            title: 'Promote',
+                            description: 'What piece should this pawn promote to?',
+                        }, <Promote pieceImages={pieceImages} promotions={matchInfo.promotions} colour={Number(matchInfo.black)} promote={piece => {
+                            socket.emit('promote', realHolding, realLocation, piece);
+                            diag.handleClose();
+                        }} />)
+                    } else
+                        socket.emit('drop', realHolding, realLocation);
                 }
                 
                 holding = null;
@@ -412,8 +430,11 @@ function resize(width, height, board) {
 }
 
 function start() {
+    if (promotionsDialog) promotionsDialog.handleClose();
     matchInfo.started = true;
     toPlace = false;
+    drawGrid();
+    drawPieces();
 }
 
 function opponentPickUp(y, x) {
@@ -440,6 +461,20 @@ function move(origin, destination) {
     drawGrid();
     drawPieces();
 }
+async function setAvailablePromotions() {
+    if (!matchInfo.started) {
+        pieceImages = await pieceImages;
+
+        promotionsDialog = await showDialog({
+            title: 'Promotions',
+            description: 'What pieces should a pawn be able to promote to?',
+        }, <Promotions pieceImages={pieceImages} promotions={matchInfo.promotions} />)
+    }
+}
+
+function setPromotion(piece) {
+    nextPromotion
+}
 
 export {
     setup,
@@ -453,4 +488,6 @@ export {
     opponentHold,
     opponentDrop,
     move,
+    setAvailablePromotions,
+    setPromotion,
 };

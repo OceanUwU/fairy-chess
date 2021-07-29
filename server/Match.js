@@ -13,6 +13,7 @@ export default class Match {
             Array(8).fill(null).map(p => ['pawn', 0]),
             ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'].map(p => [p, 0]),
         ];
+        this.promotions = ['bishop', 'queen', 'knight', 'rook'];
         this.turn = 0;
         this.history = [];
         this.width = this.board[0].length;
@@ -39,7 +40,7 @@ export default class Match {
 
     matchInfo(socket) {
         return {
-            ...Object.fromEntries(['code', 'width', 'height', 'board', 'started', 'turn', 'history'].map(key => [key, this[key]])),
+            ...Object.fromEntries(['code', 'width', 'height', 'board', 'started', 'turn', 'history', 'promotions'].map(key => [key, this[key]])),
             black: socket.num == 1,
         }
     }

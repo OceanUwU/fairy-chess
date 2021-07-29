@@ -8,6 +8,7 @@ import pieceFn from '../src/Match/pieces/fn.js';
 const codeLength = 4;
 const maxBoardSize = 16;
 const codeChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const promotableTo = Object.values(pieces).filter(piece => !piece.cantPromoteTo).map(piece => piece.name);
 
 var app = express();
 
@@ -105,6 +106,24 @@ io.on('connect', socket => {
         }
     });
 
+    socket.on('promotions', promotions => {
+        if (socket.match) {
+            if (
+                !socket.match.started
+                && Array.isArray(promotions)
+                && promotions.length >= 1
+                && promotions.every(p => promotableTo.includes(p))
+            ) {
+                promotions = [...new Set(promotions)]; //remove duplicates
+                socket.match.promotions = promotions;
+                let opponent = socket.match.opponent(socket.num);
+                if (opponent != null)
+                    opponent.emit('promotions', socket.match.promotions);
+            } else
+                socket.emit('promotions', socket.match.promotions);
+        }
+    });
+
     socket.on('start', () => {
         if (socket.match && !socket.match.started) {
             let kings = [].concat.apply([], socket.match.board).filter(p => p && p[0] == 'king');
@@ -164,7 +183,7 @@ io.on('connect', socket => {
         }
     });
 
-    socket.on('drop', (origin, destination) => {
+    let drop = (origin, destination) => {
         if (
             socket.match
             && socket.match.started
@@ -221,7 +240,26 @@ io.on('connect', socket => {
                 } else {
                     socket.match.emit('err', `Draw.`, 'Stalemate!');
                 }
-            } 
+            }
+            return true;
+        }
+        return false;
+    }
+
+    socket.on('drop', (origin, destination) => drop(origin, destination));
+
+    socket.on('promote', (origin, destination, promoteTo) => {
+        if (
+            socket.match.promotions.includes(promoteTo)
+            && Array.isArray(destination)
+            && destination.hasOwnProperty(0)
+            && destination[0] == (socket.num == 0 ? 0 : socket.match.height-1)
+        ) {
+            if (drop(origin, destination)) {
+                socket.match.board[destination[0]][destination[1]][0] = promoteTo;
+                socket.match.emit('placed', destination[1], destination[0], socket.match.board[destination[0]][destination[1]]);
+                console.log(socket.match.board);
+            }
         }
     });
 
