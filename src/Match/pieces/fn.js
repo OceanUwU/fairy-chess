@@ -99,17 +99,17 @@ function validMoves(state) {
 }
 
 function inCheck(board, history, player) {
-    let kingLocation;
+    let royals = [];
     for (let y in board) {
         for (let x in board[y]) {
             let piece = board[y][x];
-            if (piece != null && piece[0] == 'king' && piece[1] == player) {
-                kingLocation = [y, x];
+            if (piece != null && piece[2] && piece[1] == player) {
+                royals.push([Number(y), Number(x)]);
             }
         }
     }
 
-    if (!kingLocation) return null;
+    if (royals.length == 0) return false;
 
     let checks = [];
     for (let y in board) {
@@ -117,13 +117,14 @@ function inCheck(board, history, player) {
             let piece = board[y][x];
             if (piece != null && piece[1] != player) {
                 let position = [Number(y), Number(x)];
-                if (pieces[piece[0]].moves({
+                let checked;
+                let moves = pieces[piece[0]].moves({
                     board: board,
                     black: !(Boolean(player)),
                     position,
                     history: history,
-                }).some(move => move[0] == kingLocation[0] && move[1] == kingLocation[1]))
-                    checks.push(position);
+                });
+                moves.map(move => royals.filter(loc => move[0] == loc[0] && move[1] == loc[1])).forEach(i => i.forEach(j => checks.push([position, j])));
             }
         }
     }

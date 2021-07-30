@@ -58,7 +58,7 @@ io.on('connect', socket => {
         }
     });
 
-    socket.on('place', (x, y, toPlace) => {
+    socket.on('place', (x, y, toPlace, royal) => {
         if (
             socket.ingame
             && Number.isInteger(x)
@@ -76,6 +76,8 @@ io.on('connect', socket => {
                 )
             )
         ) {
+            if (royal && Array.isArray(toPlace))
+                toPlace.push(1);
             matches[socket.ingame].board[y][x] = toPlace;
             matches[socket.ingame].emit('placed', x, y, toPlace);
         }
@@ -126,15 +128,11 @@ io.on('connect', socket => {
 
     socket.on('start', () => {
         if (socket.match && !socket.match.started) {
-            let kings = [].concat.apply([], socket.match.board).filter(p => p && p[0] == 'king');
-            if (kings.length == 2 && kings[0][1] != kings[1][1]) { //if there is exactly 1 king on each team
-                if (!(pieceFn.inCheck(socket.match.board, [], 0) || pieceFn.inCheck(socket.match.board, [], 1))) {
-                    socket.match.started = true;
-                    socket.match.emit('start');
-                } else
-                    socket.emit('err', 'You can\'t start the game in check!');
+            if (!(pieceFn.inCheck(socket.match.board, [], 0) || pieceFn.inCheck(socket.match.board, [], 1))) {
+                socket.match.started = true;
+                socket.match.emit('start');
             } else
-                socket.emit('err', 'Each team must have exactly 1 king.', 'Invalid board!');
+                socket.emit('err', 'You can\'t start the game in check!');
         }
     });
 
@@ -235,10 +233,14 @@ io.on('connect', socket => {
             }
 
             if (!moveAvailable) {
-                if (pieceFn.inCheck(socket.match.board, socket.match.history, socket.match.turn)) {
-                    socket.match.emit('err', `${socket.match.turn == 1 ? 'White' : 'Black'} wins!`, 'Checkmate!');
+                if ([].concat.apply([], socket.match.board).every(piece => piece == null || piece[1] != socket.match.turn)) {
+                    socket.match.emit('err', `${socket.match.turn == 1 ? 'White' : 'Black'} wins!`, 'All enemy pieces taken!');
                 } else {
-                    socket.match.emit('err', `Draw.`, 'Stalemate!');
+                    if (pieceFn.inCheck(socket.match.board, socket.match.history, socket.match.turn)) {
+                        socket.match.emit('err', `${socket.match.turn == 1 ? 'White' : 'Black'} wins!`, 'Checkmate!');
+                    } else {
+                        socket.match.emit('err', `Draw.`, 'Stalemate!');
+                    }
                 }
             }
             return true;

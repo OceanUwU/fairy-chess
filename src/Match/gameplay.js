@@ -18,6 +18,7 @@ var paper;
 var matchInfo;
 var squareSize = 256;
 var pieceImages;
+var shadowBlur = 30;
 var size = [null, null];
 var toPlace = false;
 var holding = null;
@@ -113,7 +114,12 @@ async function drawPieces() {
         for (let y = 0; y < matchInfo.height; y++) {
             let piece = matchInfo.black ? matchInfo.board[matchInfo.height-y-1][matchInfo.width-x-1] : matchInfo.board[y][x];
             if (piece != null) {
+                if (piece[2]) {
+                    paper.pieces.ctx.shadowBlur = shadowBlur;
+                    paper.pieces.ctx.shadowColor = piece[1] == matchInfo.black ? localStorage[`fc-color-royalGlowAlly`] : localStorage[`fc-color-royalGlowEnemy`];
+                }
                 paper.pieces.ctx.drawImage(pieceImages[piece[0]][piece[1]], x * squareSize, y * squareSize, squareSize, squareSize);
+                paper.pieces.ctx.shadowBlur = 0;
             }
         }
     }
@@ -122,33 +128,20 @@ async function drawPieces() {
         paper.check.ctx.clearRect(0, 0, paper.check.canvas.width, paper.check.canvas.height);
 
         let checks = pieceFn.inCheck(matchInfo.board, matchInfo.history, matchInfo.turn);
-        console.log(checks);
-        if (checks) {
-            let kingLocation;
-            for (let y in matchInfo.board) {
-                for (let x in matchInfo.board[y]) {
-                    let piece = matchInfo.board[y][x];
-                    if (piece != null && piece[0] == 'king' && piece[1] == matchInfo.turn) {
-                        kingLocation = [Number(y), Number(x)];
-                    }
-                }
-            }
-            if (matchInfo.black) {
-                kingLocation[0] = matchInfo.height-kingLocation[0]-1;
-                kingLocation[1] = matchInfo.width-kingLocation[1]-1;
-            }
-    
-            let to = kingLocation.map(i => tileCentre(i));
+        if (checks) {    
             paper.check.ctx.globalAlpha = 0.4;
             paper.check.ctx.strokeStyle = localStorage['fc-color-checkIndicator'];
             paper.check.ctx.lineWidth = 30;
-            for (let check of checks) {
+            for (let check of JSON.parse(JSON.stringify(checks))) {
                 if (matchInfo.black) {
-                    check[0] = matchInfo.height-check[0]-1;
-                    check[1] = matchInfo.width-check[1]-1;
+                    for (let i of check) {
+                        i[0] = matchInfo.height-i[0]-1;
+                        i[1] = matchInfo.width-i[1]-1;
+                    }
                 }
 
-                let from = check.map(i => tileCentre(i));
+                let from = check[0].map(i => tileCentre(i));
+                let to = check[1].map(i => tileCentre(i));
                 paper.check.ctx.beginPath();
                 paper.check.ctx.moveTo(from[1], from[0]);
                 paper.check.ctx.lineTo(to[1], to[0]);
@@ -160,7 +153,6 @@ async function drawPieces() {
                 paper.check.ctx.lineTo(to[1] - headlen * Math.cos(angle + Math.PI / 6), to[0] - headlen * Math.sin(angle + Math.PI / 6));
                 */
                 paper.check.ctx.stroke();
-                console.log(from, to);
             }
         }
     }
@@ -244,7 +236,12 @@ async function holdUpdate(opponent=false) {
         layer.ctx.globalAlpha = 1;
         pieceImages = await pieceImages;
         let piece = matchInfo.black ? matchInfo.board[matchInfo.width-hold[0]-1][matchInfo.height-hold[1]-1] : matchInfo.board[hold[0]][hold[1]];
+        if (piece[2]) {
+            layer.ctx.shadowBlur = shadowBlur;
+            layer.ctx.shadowColor = piece[1] == matchInfo.black ? localStorage[`fc-color-royalGlowAlly`] : localStorage[`fc-color-royalGlowEnemy`];
+        }
         layer.ctx.drawImage(pieceImages[piece[0]][piece[1]], holdLocation[0], holdLocation[1]);
+        layer.ctx.shadowBlur = 0;
 
         //draw move possibilities
         if (!opponent && moveImg.complete && takeImg.complete) {
@@ -308,7 +305,7 @@ function setup(initialMatchInfo) {
         if (toPlace !== false) {
             let location = mouseGridLocation(event);
             if (location != null)
-                socket.emit('place', matchInfo.black ? matchInfo.width-location.x-1 : location.x, matchInfo.black ? matchInfo.height-location.y-1 : location.y, toPlace)
+                socket.emit('place', matchInfo.black ? matchInfo.width-location.x-1 : location.x, matchInfo.black ? matchInfo.height-location.y-1 : location.y, toPlace, document.getElementById('isRoyal').checked);
         }
     };
     board.addEventListener('mousedown', place);

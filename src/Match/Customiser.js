@@ -18,7 +18,7 @@ const pieces = () => {
     recolorImages();
     drawPieces();
 };
-const options = [['a', 'White player', '#f2f0dc', pieces], ['b', 'Black player', '#5c5a58', pieces], ['c', 'Grid\'s 1st', '#ff75ed', drawGrid], ['d', 'Grid\'s 2nd', '#ffc9f8', drawGrid], ['previousMove', 'Previous move highlight', '#ff6c6c', drawGrid], ['checkIndicator', 'Check indicator line', '#7b00ff', drawPieces]];
+const options = [['a', 'White player', '#f2f0dc', pieces], ['b', 'Black player', '#5c5a58', pieces], ['c', 'Grid\'s 1st', '#ff75ed', drawGrid], ['d', 'Grid\'s 2nd', '#ffc9f8', drawGrid], ['previousMove', 'Previous move highlight', '#ff6c6c', drawGrid], ['checkIndicator', 'Check indicator line', '#7b00ff', drawPieces], ['royalGlowAlly', 'Royal glow (ally)', '#00feff', drawPieces], ['royalGlowEnemy', 'Royal glow (enemy)', '#ff0000', drawPieces]];
 for (let i of options)
     if (!localStorage.hasOwnProperty(`fc-color-${i[0]}`))
         localStorage[`fc-color-${i[0]}`] = i[2];
@@ -44,7 +44,7 @@ export default function Customiser() {
                         setSelected(option[0]);
                         setColor(localStorage[`fc-color-${option[0]}`]);
                     }}>
-                        {option[1]} colour:
+                        {option[1]}:
                         <span className={classes.colorBox} style={{backgroundColor: localStorage[`fc-color-${option[0]}`], border: option[0] == selected ? '1px solid black' : 'none'}} />
                     </Typography>
                 </div>

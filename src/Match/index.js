@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, IconButton, Button } from '@material-ui/core';
+import { Typography, IconButton, Button, Checkbox, FormControlLabel } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import layers from './layers.js';
 import { setup, setAvailablePromotions } from './gameplay.js';
@@ -72,6 +72,7 @@ const useStyles = makeStyles({
         
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
     },
 
     pieceMenu: {
@@ -87,7 +88,7 @@ const useStyles = makeStyles({
         padding: '5px 0',
 
         '& img': {
-            width: 60,
+            width: 30,
             height: 'auto',
             cursor: 'pointer',
 
@@ -194,6 +195,8 @@ export default function Match(props) {
                 {props.matchInfo.started ? null : (
                     <div className={classes.setupBar} id="setupBar">
                         <div className={classes.pieceMenu} id="pieceMenu" />
+                        
+                        <FormControlLabel control={<Checkbox id="isRoyal" color="primary" />}label="Is Royal"/>
                         <Button variant="contained" color="primary" size="small" onClick={() => socket.emit('start')}>Start</Button>
                     </div>
                 )}

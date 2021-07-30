@@ -13,6 +13,7 @@ export default class Match {
             Array(8).fill(null).map(p => ['pawn', 0]),
             ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'].map(p => [p, 0]),
         ];
+        this.board.forEach(row => row.forEach(piece => {if (Array.isArray(piece) && piece[0] == 'king') piece.push(1)}));
         this.promotions = ['bishop', 'queen', 'knight', 'rook'];
         this.turn = 0;
         this.history = [];
