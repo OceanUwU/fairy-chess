@@ -87,6 +87,11 @@ function validMoves(state) {
     while (i--) {
         let move = moves[i];
         let board = JSON.parse(JSON.stringify(state.board));
+        let destinationPiece = board[move[0]][move[1]];
+        if (destinationPiece != null && destinationPiece[0] == 'barricade') {
+            moves.splice(i, 1);
+            break;
+        }
         board[move[0]][move[1]] = board[state.position[0]][state.position[1]];
         board[state.position[0]][state.position[1]] = null;
         state.history.push([state.position, move]);

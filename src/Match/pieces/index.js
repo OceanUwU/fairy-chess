@@ -8,6 +8,7 @@ export {default as rook} from './rook.js';
 
 //fairy pieces
 export {default as alfil} from './alfil.js';
+export {default as barricade} from './barricade.js';
 export {default as brick} from './brick.js';
 export {default as camel} from './camel.js';
 export {default as centaur} from './centaur.js';
