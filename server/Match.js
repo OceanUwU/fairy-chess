@@ -21,6 +21,8 @@ export default class Match {
         this.height = this.board.length;
         this.started = false;
         this.drawOffer = null;
+        this.previousBoards = [];
+        this.moveRule = 0;
     }
 
     get players() {

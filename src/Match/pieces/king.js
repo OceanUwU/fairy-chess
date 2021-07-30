@@ -7,7 +7,6 @@ export default {
         let moves = [...fn.generic(state, [1, 1], false), ...fn.generic(state, [1, 0], false)];
 
         if (state.history.every(h => h[1][0] != state.position[0] || h[1][1] != state.position[1])) { //if king has never moved
-            console.log('king never moved!');
             for (let i of [-1, 1]) { //for each (left, right)
                 let distance = 0;
                 while (state.board[state.position[0]].hasOwnProperty(state.position[1]+(i*++distance))) {

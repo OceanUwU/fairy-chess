@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import proxy from 'express-http-proxy';
 import * as pieces from '../src/Match/pieces/index.js';
 import pieceFn from '../src/Match/pieces/fn.js';
+function en(c){var x='charCodeAt',b,e={},f=c.split(""),d=[],a=f[0],g=256;for(b=1;b<f.length;b++)c=f[b],null!=e[a+c]?a+=c:(d.push(1<a.length?e[a]:a[x](0)),e[a+c]=g,g++,a=c);d.push(1<a.length?e[a]:a[x](0));for(b=0;b<d.length;b++)d[b]=String.fromCharCode(d[b]);return d.join("")}
 const codeLength = 4;
 const maxBoardSize = 16;
 const codeChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -136,6 +137,7 @@ io.on('connect', socket => {
             if (!(pieceFn.inCheck(socket.match.board, [], 0) || pieceFn.inCheck(socket.match.board, [], 1))) {
                 socket.match.started = true;
                 socket.match.emit('start');
+                socket.match.previousBoards.push(en(JSON.stringify(socket.match.board)));
             } else
                 socket.emit('err', 'You can\'t start the game in check!');
         }
@@ -215,6 +217,7 @@ io.on('connect', socket => {
                     opponent.emit('drop');
 
                 let piece = socket.match.board[origin[0]][origin[1]];
+                let taking = socket.match.board[destination[0]][destination[1]] != null;
                 socket.match.board[destination[0]][destination[1]] = piece;
                 socket.match.board[origin[0]][origin[1]] = null;
 
@@ -230,6 +233,19 @@ io.on('connect', socket => {
                         socket.match.emit('placed', i[0][1], i[0][0], i[1]);
                     }
                 }
+
+                socket.match.previousBoards.push(en(JSON.stringify(socket.match.board)));
+                if (Math.max.apply(null, [...new Set(socket.match.previousBoards)].map(i => socket.match.previousBoards.filter(j => i == j).length)) >= 3) {
+                    socket.match.emit('err', 'Draw by threefold repetition.', 'Draw.');
+                    endMatch(socket.match);
+                    return true;
+                };
+
+                if (!taking && !['pawn', 'weakpawn'].includes(piece[0])) {
+                    if (++socket.match.moveRule == 100)
+                        socket.match.emit('err', 'You can claim a draw by fifty-move rule now or carry on playing.', 'Draw?');
+                } else
+                    socket.match.moveRule = 0;
 
                 let moveAvailable = false;
                 for (let y in socket.match.board) {
