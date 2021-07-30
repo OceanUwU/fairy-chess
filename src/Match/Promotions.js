@@ -14,12 +14,10 @@ export default function Promotions(props) {
 
     React.useEffect(() => {
         let promotionSet = newPromotions => {
-            console.log(newPromotions);
             props.promotions.splice(0);
             for (let i of newPromotions) {
                 props.promotions.push(i);
             }
-            console.log(props.promotions);
             setPromotions(JSON.parse(JSON.stringify(props.promotions)))
         };
         socket.on('promotions', promotionSet);

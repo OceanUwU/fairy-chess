@@ -77,7 +77,7 @@ function rotateMoves(state, moves) {
 }
 
 function removeDuplicates(moves) {
-    return moves.map(i => JSON.stringify(i)).filter((value, index, self) => self.indexOf(value) === index).map(i => JSON.parse(i));
+    return moves.filter((i, ind1) => !moves.some((j, ind2) => ind2 < ind1 && i[0] == j[0] && i[1] == j[1]));
 }
 
 function validMoves(state) {
@@ -95,6 +95,11 @@ function validMoves(state) {
         board[move[0]][move[1]] = board[state.position[0]][state.position[1]];
         board[state.position[0]][state.position[1]] = null;
         state.history.push([state.position, move]);
+        if (move[2]) {
+            for (let i of move[2]) {
+                board[i[0][0]][i[0][1]] = i[1];
+            }
+        }
         if (inCheck(board, state.history, Number(state.black))) { 
             moves.splice(i, 1);
         }

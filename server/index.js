@@ -201,55 +201,67 @@ io.on('connect', socket => {
             )
             && socket.match.board[origin[0]][origin[1]] != null //origin is not an empty tile
             && socket.match.board[origin[0]][origin[1]][1] == socket.num //piece is owned by mover
-            && pieceFn.validMoves({
+        ) {
+            let moves = pieceFn.validMoves({
                 board: socket.match.board,
                 black: socket.num == 1,
                 position: origin,
                 history: socket.match.history,
-            }).some(allowed => allowed[0] == destination[0] && allowed[1] == destination[1])
-        ) {
-            let opponent = socket.match.opponent(socket.num);
-            if (opponent != null)
-                opponent.emit('drop');
+            });
+            let move = moves.find(allowed => allowed[0] == destination[0] && allowed[1] == destination[1]);
+            if (move != undefined) {
+                let opponent = socket.match.opponent(socket.num);
+                if (opponent != null)
+                    opponent.emit('drop');
 
-            let piece = socket.match.board[origin[0]][origin[1]];
-            socket.match.board[destination[0]][destination[1]] = piece;
-            socket.match.board[origin[0]][origin[1]] = null;
+                let piece = socket.match.board[origin[0]][origin[1]];
+                socket.match.board[destination[0]][destination[1]] = piece;
+                socket.match.board[origin[0]][origin[1]] = null;
 
-            socket.match.history.push([origin, destination]);
-            
-            socket.match.turn = Number(!(Boolean(socket.match.turn)));
-            socket.match.emit('move', origin, destination);
+                socket.match.history.push([origin, destination]);
+                
+                socket.match.turn = Number(!(Boolean(socket.match.turn)));
+                socket.match.emit('move', origin, destination);
 
-            let moveAvailable = false;
-            for (let y in socket.match.board) {
-                for (let x in socket.match.board[y]) {
-                    let piece = socket.match.board[y][x];
-                    if (piece != null && piece[1] == socket.match.turn && pieceFn.validMoves({
-                        board: socket.match.board,
-                        black: socket.match.turn == 1,
-                        position: [Number(y), Number(x)],
-                        history: socket.match.history,
-                    }).length > 0) {
-                        moveAvailable = true;
-                        break;
+                if (move[2]) {
+                    for (let i of move[2]) {
+                        console.log(i);
+                        socket.match.board[i[0][0]][i[0][1]] = i[1];
+                        socket.match.emit('placed', i[0][1], i[0][0], i[1]);
                     }
                 }
-            }
 
-            if (!moveAvailable) {
-                if ([].concat.apply([], socket.match.board).every(piece => piece == null || piece[1] != socket.match.turn)) {
-                    socket.match.emit('err', `${socket.match.turn == 1 ? 'White' : 'Black'} wins!`, 'All enemy pieces taken!');
-                } else {
-                    if (pieceFn.inCheck(socket.match.board, socket.match.history, socket.match.turn)) {
-                        socket.match.emit('err', `${socket.match.turn == 1 ? 'White' : 'Black'} wins!`, 'Checkmate!');
+                let moveAvailable = false;
+                for (let y in socket.match.board) {
+                    for (let x in socket.match.board[y]) {
+                        let piece = socket.match.board[y][x];
+                        if (piece != null && piece[1] == socket.match.turn && pieceFn.validMoves({
+                            board: socket.match.board,
+                            black: socket.match.turn == 1,
+                            position: [Number(y), Number(x)],
+                            history: socket.match.history,
+                        }).length > 0) {
+                            moveAvailable = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!moveAvailable) {
+                    if ([].concat.apply([], socket.match.board).every(piece => piece == null || piece[1] != socket.match.turn)) {
+                        socket.match.emit('err', `${socket.match.turn == 1 ? 'White' : 'Black'} wins!`, 'All enemy pieces taken!');
                     } else {
-                        socket.match.emit('err', `Draw.`, 'Stalemate!');
+                        if (pieceFn.inCheck(socket.match.board, socket.match.history, socket.match.turn)) {
+                            socket.match.emit('err', `${socket.match.turn == 1 ? 'White' : 'Black'} wins!`, 'Checkmate!');
+                        } else {
+                            socket.match.emit('err', `Draw.`, 'Stalemate!');
+                        }
                     }
+                    endMatch(socket.match);
                 }
-                endMatch(socket.match);
-            }
-            return true;
+                console.log(socket.match.board);
+                return true;
+            } else return false;
         }
         return false;
     }
@@ -266,17 +278,13 @@ io.on('connect', socket => {
             if (drop(origin, destination)) {
                 socket.match.board[destination[0]][destination[1]][0] = promoteTo;
                 socket.match.emit('placed', destination[1], destination[0], socket.match.board[destination[0]][destination[1]]);
-                console.log(socket.match.board);
             }
         }
     });
 
     socket.on('offerDraw', () => {
-        console.log(':D1')
         if (socket.match && socket.match.started) {
-            console.log(':D2')
             if (socket.match.turn == socket.num) {
-                console.log(':D3')
                 socket.match.drawOffer = socket.num;
     
                 let opponent = socket.match.opponent(socket.num);
