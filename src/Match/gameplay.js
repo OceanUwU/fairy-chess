@@ -225,7 +225,8 @@ async function holdUpdate(opponent=false) {
         layer.ctx.clearRect(0, 0, layer.canvas.width, layer.canvas.height);
         paper.possibilities.ctx.clearRect(0, 0, paper.possibilities.canvas.width, paper.possibilities.canvas.height);
     
-        document.body.style.cursor = hold === null ? 'auto' : 'grabbing';
+        if (!opponent)
+            document.body.style.cursor = hold === null ? 'auto' : 'grabbing';
     
         if (hold !== null) {
             //make piece transparent
