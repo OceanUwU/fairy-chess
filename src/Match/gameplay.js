@@ -217,44 +217,46 @@ function mouseGridLocation(event, black=false) {
 }
 
 async function holdUpdate(opponent=false) {
-    let layer = paper[opponent ? 'opponentHold' : 'hold'];
-    let hold = opponent ? opponentHolding : holding;
-    let holdLocation = opponent ? opponentHoldingLocation : holdingLocation;
-
-    layer.ctx.clearRect(0, 0, layer.canvas.width, layer.canvas.height);
-    paper.possibilities.ctx.clearRect(0, 0, paper.possibilities.canvas.width, paper.possibilities.canvas.height);
-
-    document.body.style.cursor = hold === null ? 'auto' : 'grabbing';
-
-    if (hold !== null) {
-        //make piece transparent
-        layer.ctx.globalAlpha = 0.5;
-        layer.ctx.fillStyle = (((hold[1] % 2) ? hold[0]+1 : hold[0]) % 2) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
-        layer.ctx.fillRect(hold[1] * squareSize, hold[0] * squareSize, squareSize, squareSize);
+    requestAnimationFrame(async () => {
+        let layer = paper[opponent ? 'opponentHold' : 'hold'];
+        let hold = opponent ? opponentHolding : holding;
+        let holdLocation = opponent ? opponentHoldingLocation : holdingLocation;
     
-        //draw held piece above board
-        layer.ctx.globalAlpha = 1;
-        pieceImages = await pieceImages;
-        let piece = matchInfo.black ? matchInfo.board[matchInfo.width-hold[0]-1][matchInfo.height-hold[1]-1] : matchInfo.board[hold[0]][hold[1]];
-        if (piece[2]) {
-            layer.ctx.shadowBlur = shadowBlur;
-            layer.ctx.shadowColor = piece[1] == matchInfo.black ? localStorage[`fc-color-royalGlowAlly`] : localStorage[`fc-color-royalGlowEnemy`];
-        }
-        layer.ctx.drawImage(pieceImages[piece[0]][piece[1]], holdLocation[0], holdLocation[1]);
-        layer.ctx.shadowBlur = 0;
-
-        //draw move possibilities
-        if (!opponent && moveImg.complete && takeImg.complete) {
-            paper.possibilities.ctx.globalAlpha = 0.3;
-            for (let move of holdingMoves) {
-                let take = matchInfo.board[move[0]][move[1]] != null && matchInfo.board[move[0]][move[1]][1] != matchInfo.black;
-                if (matchInfo.black) {
-                    move = move.map((i, index) => matchInfo[['height', 'width'][index]] - i - 1);
+        layer.ctx.clearRect(0, 0, layer.canvas.width, layer.canvas.height);
+        paper.possibilities.ctx.clearRect(0, 0, paper.possibilities.canvas.width, paper.possibilities.canvas.height);
+    
+        document.body.style.cursor = hold === null ? 'auto' : 'grabbing';
+    
+        if (hold !== null) {
+            //make piece transparent
+            layer.ctx.globalAlpha = 0.5;
+            layer.ctx.fillStyle = (((hold[1] % 2) ? hold[0]+1 : hold[0]) % 2) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
+            layer.ctx.fillRect(hold[1] * squareSize, hold[0] * squareSize, squareSize, squareSize);
+        
+            //draw held piece above board
+            layer.ctx.globalAlpha = 1;
+            pieceImages = await pieceImages;
+            let piece = matchInfo.black ? matchInfo.board[matchInfo.width-hold[0]-1][matchInfo.height-hold[1]-1] : matchInfo.board[hold[0]][hold[1]];
+            if (piece[2]) {
+                layer.ctx.shadowBlur = shadowBlur;
+                layer.ctx.shadowColor = piece[1] == matchInfo.black ? localStorage[`fc-color-royalGlowAlly`] : localStorage[`fc-color-royalGlowEnemy`];
+            }
+            layer.ctx.drawImage(pieceImages[piece[0]][piece[1]], holdLocation[0], holdLocation[1]);
+            layer.ctx.shadowBlur = 0;
+    
+            //draw move possibilities
+            if (!opponent && moveImg.complete && takeImg.complete) {
+                paper.possibilities.ctx.globalAlpha = 0.3;
+                for (let move of holdingMoves) {
+                    let take = matchInfo.board[move[0]][move[1]] != null && matchInfo.board[move[0]][move[1]][1] != matchInfo.black;
+                    if (matchInfo.black) {
+                        move = move.map((i, index) => matchInfo[['height', 'width'][index]] - i - 1);
+                    }
+                    paper.possibilities.ctx.drawImage(take ? takeImg : moveImg, move[1] * squareSize, move[0] * squareSize);
                 }
-                paper.possibilities.ctx.drawImage(take ? takeImg : moveImg, move[1] * squareSize, move[0] * squareSize);
             }
         }
-    }
+    });
 }
 
 function setup(initialMatchInfo) {
