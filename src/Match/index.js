@@ -122,16 +122,15 @@ const useStyles = makeStyles({
 export default function Match(props) {
     const classes = useStyles();
     let [turn, setTurn] = React.useState(props.matchInfo.turn);
-    let [time, setTime] = React.useState([0, 0]);
+    let [time0, setTime0] = React.useState(0);
+    let [time1, setTime1] = React.useState(0);
 
     let timer;
 
     let timerTick = () => {
-        let newTime = [...time];
-        if (props.matchInfo.started) {
-            newTime[turn]++;
-        } 
-        setTime(newTime);
+        eval(`setTime${turn}(time${turn}+${props.matchInfo.started ? 1 : 0})`);
+        if (!props.matchInfo.started)
+            timer = setTimeout(timerTick, 1000);
     }
 
     let customiser = <Customiser />;
@@ -140,6 +139,8 @@ export default function Match(props) {
 
         socket.on('start', () => {
             props.matchInfo.started = true;
+            setTime0(0);
+            setTime1(0);
             setTurn(turn);
         });
         
@@ -160,7 +161,7 @@ export default function Match(props) {
     React.useEffect(() => {
         timer = setTimeout(timerTick, 1000);
         return () => clearTimeout(timer);
-    }, [time]);
+    }, [time0, time1]);
 
     let isYou = {textDecoration: 'underline'};
     let isTurn = {fontSize: '1.5rem', fontWeight: 'bold'};
@@ -170,7 +171,7 @@ export default function Match(props) {
             <div className={classes.topBar}>
                 <div style={{background: 'white'}}>
                     <Typography variant="caption" style={props.matchInfo.black ? {} : isYou}>White</Typography>
-                    <Typography style={turn == 0 ? isTurn : {}}>{Math.floor(time[0]/60)}:{String(time[0]%60).padStart(2,'0')}</Typography>
+                    <Typography style={turn == 0 ? isTurn : {}}>{Math.floor(time0/60)}:{String(time0%60).padStart(2,'0')}</Typography>
                 </div>
                 <div style={{background: 'lightgrey', flexGrow: 0, padding: '0 20px'}}>
                     <Typography variant="caption">Room Code</Typography>
@@ -178,7 +179,7 @@ export default function Match(props) {
                 </div>
                 <div style={{background: 'black', color: 'white'}}>
                     <Typography variant="caption" style={props.matchInfo.black ? isYou : {}}>Black</Typography>
-                    <Typography style={turn == 1 ? isTurn : {}}>{Math.floor(time[1]/60)}:{String(time[1]%60).padStart(2,'0')}</Typography>
+                    <Typography style={turn == 1 ? isTurn : {}}>{Math.floor(time1/60)}:{String(time1%60).padStart(2,'0')}</Typography>
                 </div>
             </div>
 

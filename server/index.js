@@ -67,6 +67,7 @@ io.on('connect', socket => {
     socket.on('place', (x, y, toPlace, royal) => {
         if (
             socket.ingame
+            && !socket.match.started
             && Number.isInteger(x)
             && x >= 0
             && x < matches[socket.ingame].width
@@ -90,7 +91,7 @@ io.on('connect', socket => {
     });
 
     socket.on('size', (dimension, direction) => {
-        if (socket.ingame && (dimension === 'width' || dimension === 'height') && typeof direction == 'number') {
+        if (socket.ingame && !socket.match.started && (dimension === 'width' || dimension === 'height') && typeof direction == 'number') {
             if (direction > 0) {
                 if (matches[socket.ingame][dimension] == maxBoardSize)
                     return;
@@ -228,7 +229,6 @@ io.on('connect', socket => {
 
                 if (move[2]) {
                     for (let i of move[2]) {
-                        console.log(i);
                         socket.match.board[i[0][0]][i[0][1]] = i[1];
                         socket.match.emit('placed', i[0][1], i[0][0], i[1]);
                     }
@@ -275,7 +275,6 @@ io.on('connect', socket => {
                     }
                     endMatch(socket.match);
                 }
-                console.log(socket.match.board);
                 return true;
             } else return false;
         }
