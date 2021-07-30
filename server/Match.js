@@ -20,6 +20,7 @@ export default class Match {
         this.width = this.board[0].length;
         this.height = this.board.length;
         this.started = false;
+        this.drawOffer = null;
     }
 
     get players() {

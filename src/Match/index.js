@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, IconButton, Button, Checkbox, FormControlLabel } from '@material-ui/core';
+import { Typography, Tooltip, IconButton, Button, Checkbox, FormControlLabel } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import layers from './layers.js';
 import { setup, setAvailablePromotions } from './gameplay.js';
@@ -7,6 +7,9 @@ import FormatPaintIcon from '@material-ui/icons/FormatPaint';
 import GridOnIcon from '@material-ui/icons/GridOn';
 import ShareIcon from '@material-ui/icons/Share';
 import StarIcon from '@material-ui/icons/Star';
+import FlagIcon from '@material-ui/icons/Flag';
+import PanToolIcon from '@material-ui/icons/DragHandle';
+import HomeIcon from '@material-ui/icons/Home';
 import showDialog from '../showDialog.js';
 import Customiser from './Customiser.js';
 import BoardSizeEditor from './BoardSizeEditor';
@@ -184,12 +187,26 @@ export default function Match(props) {
                 <div className={classes.board} id="board">
                     {layers.map(layer => <canvas id={`${layer}Layer`} key={layer} className={classes.layer} />)}
                     <div className={classes.actions}>
-                        <IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><FormatPaintIcon fontSize="small" /></IconButton>
-                        {props.matchInfo.started ? null : [
-                            <IconButton onClick={() => showDialog({title: 'Edit board size'}, <BoardSizeEditor />)} size="small"><GridOnIcon fontSize="small" /></IconButton>,
-                            <IconButton size="small"><ShareIcon fontSize="small" /></IconButton>,
-                            <IconButton onClick={setAvailablePromotions} size="small"><StarIcon fontSize="small" /></IconButton>,
+                        <Tooltip title="Customise"><IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><FormatPaintIcon fontSize="small" /></IconButton></Tooltip>
+                        {props.matchInfo.started ? [
+                            <Tooltip title="Offer draw"><IconButton onClick={async () => {let diag = await showDialog({
+                                title: 'Really offer draw?',
+                                description: 'If your opponent accepts, the game will end in a draw.',
+                                buttonText: 'Offer draw',
+                                buttonAction: () => {socket.emit('offerDraw');diag.handleClose()},
+                            })}} size="small"><PanToolIcon fontSize="small" /></IconButton></Tooltip>,
+                            <Tooltip title="Resign"><IconButton onClick={() => showDialog({
+                                title: 'Really resign?',
+                                description: 'Your opponent will win the game if you resign.',
+                                buttonText: 'Resign',
+                                buttonAction: () => socket.emit('resign'),
+                            })} size="small"><FlagIcon fontSize="small" /></IconButton></Tooltip>,
+                        ] : [
+                            <Tooltip title="Board size"><IconButton onClick={() => showDialog({title: 'Edit board size'}, <BoardSizeEditor />)} size="small"><GridOnIcon fontSize="small" /></IconButton></Tooltip>,
+                            <Tooltip title="Export/import boards"><IconButton size="small"><ShareIcon fontSize="small" /></IconButton></Tooltip>,
+                            <Tooltip title="Promotions"><IconButton onClick={setAvailablePromotions} size="small"><StarIcon fontSize="small" /></IconButton></Tooltip>,
                         ]}
+                        {socket.connected ? null : <Tooltip title="Home"><IconButton href="/" size="small"><HomeIcon fontSize="small" /></IconButton></Tooltip>}
                     </div>
                 </div>
                 {props.matchInfo.started ? null : (

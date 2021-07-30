@@ -22,6 +22,11 @@ const server = app.listen(cfg.port, () => {
     console.log(`Web server started on port ${cfg.port}.`);
 });
 
+function endMatch(match) {
+    delete matches[match.code];
+    match.connected.forEach(socket => socket.disconnect());
+}
+
 const io = new Server(server);
 io.on('connect', socket => {
     socket.ingame = false;
@@ -242,6 +247,7 @@ io.on('connect', socket => {
                         socket.match.emit('err', `Draw.`, 'Stalemate!');
                     }
                 }
+                endMatch(socket.match);
             }
             return true;
         }
@@ -265,8 +271,43 @@ io.on('connect', socket => {
         }
     });
 
+    socket.on('offerDraw', () => {
+        console.log(':D1')
+        if (socket.match && socket.match.started) {
+            console.log(':D2')
+            if (socket.match.turn == socket.num) {
+                console.log(':D3')
+                socket.match.drawOffer = socket.num;
+    
+                let opponent = socket.match.opponent(socket.num);
+                if (opponent != null)
+                    opponent.emit('drawOffer');
+            } else
+                socket.emit('err', 'You can only offer a draw on your turn.');
+        }
+    });
+
+    socket.on('acceptDraw', () => {
+        if (
+            socket.match
+            && socket.match.started
+            && socket.match.drawOffer !== null
+            && socket.match.drawOffer != socket.num
+        ) {
+            socket.match.emit('err', `${socket.num == 0 ? 'Black' : 'white'} offered a draw, and ${socket.num == 0 ? 'white' : 'black'} accepted.`, 'Draw.');
+            endMatch(socket.match);
+        }
+    });
+
+    socket.on('resign', () => {
+        if (socket.match && socket.match.started) {
+            socket.match.emit('err', `${socket.num == 0 ? 'White' : 'Black'} resigned. ${socket.num == 0 ? 'Black' : 'White'} wins!`, 'Win by resignation!');
+            endMatch(socket.match);
+        }
+    });
+
     socket.on('disconnect', () => {
-        if (socket.ingame) {
+        if (socket.ingame && matches[socket.ingame]) {
             matches[socket.ingame][`player${socket.num}`] = null;
             if (matches[socket.ingame].connected.length == 0)
                 delete matches[socket.ingame];

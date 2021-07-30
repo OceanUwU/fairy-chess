@@ -24,5 +24,11 @@ socket.on('pickup', (y, x) => gameplay.opponentPickUp(y, x));
 socket.on('hold', (x, y) => gameplay.opponentHold(x, y));
 socket.on('drop', (x, y) => gameplay.opponentDrop(x, y));
 socket.on('move', (origin, destination) => gameplay.move(origin, destination));
+socket.on('drawOffer', () => showDialog({
+    title: 'Draw offered',
+    description: 'Your opponent offered to end the match as a draw.',
+    buttonText: 'Accept Draw',
+    buttonAction: () => socket.emit('acceptDraw'),
+}));
 
 export default socket;
