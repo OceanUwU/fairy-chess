@@ -384,7 +384,7 @@ function setup(initialMatchInfo) {
                 if (matchInfo.started && matchInfo.turn == matchInfo.black) {
                     let realLocation = matchInfo.black ? [matchInfo.height-location.y-1, matchInfo.width-location.x-1] : [location.y, location.x];
                     let realHolding = matchInfo.black ? [matchInfo.width-holding[0]-1, matchInfo.height-holding[1]-1] : holding;
-                    if (location.y == 0 && ['pawn', 'weakpawn'].includes(matchInfo.board[holding[0]][holding[1]][0])) {
+                    if (location.y == 0 && ['pawn', 'weakpawn'].includes(matchInfo.board[realHolding[0]][realHolding[1]][0])) {
                         pieceImages = await pieceImages;
 
                         let diag = await showDialog({
