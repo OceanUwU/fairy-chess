@@ -2,6 +2,8 @@ import express from 'express';
 import cfg from './cfg.js';
 import Match from './Match.js';
 import { Server } from 'socket.io';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import proxy from 'express-http-proxy';
 import * as pieces from '../src/Match/pieces/index.js';
 import pieceFn from '../src/Match/pieces/fn.js';
@@ -16,6 +18,8 @@ var app = express();
 if (cfg.dev == true) {
     app.use('/', proxy('http://localhost:3000'));
 } else {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
     app.use('/', express.static(__dirname + '/../build'));
 }
 
