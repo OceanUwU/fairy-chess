@@ -9,6 +9,8 @@ import Promotions from './Promotions.js';
 import Promote from './Promote.js';
 import showDialog from '../showDialog.js';
 
+const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+
 var moveImg = new Image();
 moveImg.src = '/move.png';
 var takeImg = new Image();
@@ -72,6 +74,26 @@ async function recolorImages() {
     });
 }
 
+function drawText() {
+    paper.text.ctx.clearRect(0, 0, paper.text.canvas.width, paper.text.canvas.height);
+    paper.text.ctx.font = '50px Arial';
+    paper.text.ctx.fillStyle = localStorage['fc-color-text'];
+    paper.text.ctx.globalAlpha = 0.6;
+
+    paper.text.ctx.textBaseline= 'bottom';
+    paper.text.ctx.textAlign= 'center';
+    for (let x = 0; x < matchInfo.width; x++) {
+        let letter = matchInfo.black ? alphabet[matchInfo.width-x-1] : alphabet[x];
+        paper.text.ctx.fillText(letter, (x+0.5)*squareSize, squareSize * matchInfo.height);
+    }
+    paper.text.ctx.textBaseline= 'middle';
+    paper.text.ctx.textAlign= 'start';
+    for (let y = 0; y < matchInfo.height; y++) {
+        let num = matchInfo.black ? y+1 : matchInfo.height-y;
+        paper.text.ctx.fillText(num, 0, (y+0.5)*squareSize);
+    }
+}
+
 function drawGrid() {
     if (size[0] != matchInfo.width || size[1] != matchInfo.height) {
         Object.values(paper).forEach(layer => {
@@ -80,6 +102,8 @@ function drawGrid() {
         });
         drawPieces();
         size = [matchInfo.width, matchInfo.height];
+
+        drawText();
     }
 
     for (let x = 0; x < matchInfo.width; x++) {
@@ -480,6 +504,7 @@ export {
     setup,
     recolorImages,
     drawGrid,
+    drawText,
     drawPieces,
     place,
     resize,

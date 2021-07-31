@@ -2,7 +2,7 @@ import { Typography } from '@material-ui/core';
 import React from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { makeStyles } from '@material-ui/core/styles';
-import { recolorImages, drawGrid, drawPieces } from './gameplay.js';
+import { recolorImages, drawGrid, drawPieces, drawText } from './gameplay.js';
 
 const useStyles = makeStyles({
     colorBox: {
@@ -18,7 +18,7 @@ const pieces = () => {
     recolorImages();
     drawPieces();
 };
-const options = [['a', 'White player', '#f2f0dc', pieces], ['b', 'Black player', '#5c5a58', pieces], ['c', 'Grid\'s 1st', '#ff75ed', drawGrid], ['d', 'Grid\'s 2nd', '#ffc9f8', drawGrid], ['previousMove', 'Previous move highlight', '#ff6c6c', drawGrid], ['checkIndicator', 'Check indicator line', '#7b00ff', drawPieces], ['royalGlowAlly', 'Royal glow (ally)', '#00feff', drawPieces], ['royalGlowEnemy', 'Royal glow (enemy)', '#ff0000', drawPieces]];
+const options = [['a', 'White player', '#f2f0dc', pieces], ['b', 'Black player', '#5c5a58', pieces], ['c', 'Grid\'s 1st', '#ff75ed', drawGrid], ['d', 'Grid\'s 2nd', '#ffc9f8', drawGrid], ['previousMove', 'Previous move highlight', '#ff6c6c', drawGrid], ['checkIndicator', 'Check indicator line', '#7b00ff', drawPieces], ['royalGlowAlly', 'Royal glow (ally)', '#00feff', drawPieces], ['royalGlowEnemy', 'Royal glow (enemy)', '#ff0000', drawPieces], ['text', 'Text', '#000000', drawText]];
 for (let i of options)
     if (!localStorage.hasOwnProperty(`fc-color-${i[0]}`))
         localStorage[`fc-color-${i[0]}`] = i[2];
