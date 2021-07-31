@@ -289,6 +289,11 @@ io.on('connect', socket => {
             && Array.isArray(destination)
             && destination.hasOwnProperty(0)
             && destination[0] == (socket.num == 0 ? 0 : socket.match.height-1)
+            && Array.isArray(origin)
+            && socket.match.board.hasOwnProperty(origin[0])
+            && socket.match.board[origin[0]].hasOwnProperty(origin[1])
+            && socket.match.board[origin[0]][origin[1]] != null
+            && ['pawn', 'weakpawn'].includes(socket.match.board[origin[0]][origin[1]][0])
         ) {
             if (drop(origin, destination)) {
                 socket.match.board[destination[0]][destination[1]][0] = promoteTo;
