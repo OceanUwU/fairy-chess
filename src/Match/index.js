@@ -169,11 +169,11 @@ export default function Match(props) {
     return (
         <div className={classes.root}>
             <div className={classes.topBar}>
-                <div style={{background: 'white'}}>
+                <div style={{background: 'white', color: 'black'}}>
                     <Typography variant="caption" style={props.matchInfo.black ? {} : isYou}>White</Typography>
                     <Typography style={turn == 0 ? isTurn : {}}>{Math.floor(time0/60)}:{String(time0%60).padStart(2,'0')}</Typography>
                 </div>
-                <div style={{background: 'lightgrey', flexGrow: 0, padding: '0 20px'}}>
+                <div style={{background: 'lightgrey', color: 'black', flexGrow: 0, padding: '0 20px'}}>
                     <Typography variant="caption">Room Code</Typography>
                     <Typography variant="h5">{props.matchInfo.code}</Typography>
                 </div>

@@ -77,7 +77,7 @@ async function recolorImages() {
 function drawText() {
     paper.text.ctx.clearRect(0, 0, paper.text.canvas.width, paper.text.canvas.height);
     paper.text.ctx.font = '50px Arial';
-    paper.text.ctx.fillStyle = localStorage['fc-color-text'];
+    paper.text.ctx.fillStyle = localStorage['fc-color-boardText'];
     paper.text.ctx.globalAlpha = 0.6;
 
     paper.text.ctx.textBaseline= 'bottom';
