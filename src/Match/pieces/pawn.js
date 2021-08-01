@@ -30,7 +30,7 @@ export default {
         //en passent
         if (state.history.length >= 1) {
             let last = state.history[state.history.length-1];
-            if (state.board[last[1][0]][last[1][1]][0] == 'pawn') { //if the last piece to move was a pawn
+            if (state.board[last[1][0]][last[1][1]] && state.board[last[1][0]][last[1][1]][0] == 'pawn') { //if the last piece to move was a pawn
                 for (let dir of [1, -1]) { //if that pawn is adjacent to the currently moving pawn
                     if (state.position[0] == last[1][0] && state.position[1]+dir == last[1][1]) { 
                         if (Math.abs(last[1][0] - last[0][0]) == 2)
