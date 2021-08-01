@@ -2,6 +2,7 @@ import fn from './fn.js';
 
 export default {
     name: 'grasshopper',
+    short: 'gr',
     desc: 'Can jump over other pieces along the queen lines.',
     moves: state => {
         let moves = [];

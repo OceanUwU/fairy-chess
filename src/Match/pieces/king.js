@@ -2,6 +2,7 @@ import fn from './fn.js';
 
 export default {
     name: 'king',
+    short: 'ki',
     desc: 'Can move to any surrounding square.',
     moves: state => {
         let moves = [...fn.generic(state, [1, 1], false), ...fn.generic(state, [1, 0], false)];

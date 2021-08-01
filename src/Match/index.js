@@ -13,6 +13,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import showDialog from '../showDialog.js';
 import Customiser from './Customiser.js';
 import BoardSizeEditor from './BoardSizeEditor';
+import BoardLoader from './BoardLoader';
 import socket from '../socket.js';
 
 const useStyles = makeStyles({
@@ -204,7 +205,7 @@ export default function Match(props) {
                             })} size="small"><FlagIcon fontSize="small" /></IconButton></Tooltip>,
                         ] : [
                             <Tooltip title="Board size"><IconButton onClick={() => showDialog({title: 'Edit board size'}, <BoardSizeEditor />)} size="small"><GridOnIcon fontSize="small" /></IconButton></Tooltip>,
-                            <Tooltip title="Export/import boards"><IconButton size="small"><ShareIcon fontSize="small" /></IconButton></Tooltip>,
+                            <Tooltip title="Export/import boards"><IconButton onClick = {() => showDialog({title: 'Board loader'}, <BoardLoader matchInfo={props.matchInfo} />)} size="small"><ShareIcon fontSize="small" /></IconButton></Tooltip>,
                             <Tooltip title="Promotions"><IconButton onClick={setAvailablePromotions} size="small"><StarIcon fontSize="small" /></IconButton></Tooltip>,
                         ]}
                         {socket.connected ? null : <Tooltip title="Home"><IconButton href="/" size="small"><HomeIcon fontSize="small" /></IconButton></Tooltip>}

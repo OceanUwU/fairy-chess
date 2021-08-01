@@ -2,6 +2,7 @@ import fn from './fn.js';
 
 export default {
     name: 'double',
+    short: 'do',
     desc: 'Makes two knight moves.',
     moves: state => {
         let firstJumps = fn.generic(state, [1, 2], false);

@@ -2,6 +2,7 @@ import fn from './fn.js';
 
 export default {
     name: 'pawn',
+    short: 'pa',
     desc: 'Can move one space forward. Takes diagonally. Can be promoted to another piece if it reaches the top of the board.',
     cantPromoteTo: true,
     moves: state => {

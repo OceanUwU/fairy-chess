@@ -2,6 +2,7 @@ import fn from './fn.js';
 
 export default {
     name: 'brick',
+    short: 'br',
     desc: 'Can move anywhere, but can\'t take.',
     moves: state => {
         let moves = [];

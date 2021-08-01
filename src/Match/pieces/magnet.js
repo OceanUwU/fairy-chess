@@ -2,6 +2,7 @@ import fn from './fn.js';
 
 export default {
     name: 'magnet',
+    short: 'mg',
     desc: 'Can move along the queen lines, as long as there is a piece in that direction.',
     moves: state => {
         let moves = [];

@@ -4,6 +4,7 @@ const movement = [[-2, -1], [-2, 0], [-2, 1], [-1, -2], [-1, -1], [-1, 0], [0, -
 
 export default {
     name: 'imposter',
+    short: 'im',
     desc: 'amogus',
     moves: state => {
         let moves = [];

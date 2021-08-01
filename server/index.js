@@ -119,7 +119,7 @@ io.on('connect', socket => {
         }
     });
 
-    socket.on('promotions', promotions => {
+    socket.on('promotions', (promotions, loading) => {
         if (socket.match) {
             if (
                 !socket.match.started
@@ -132,6 +132,8 @@ io.on('connect', socket => {
                 let opponent = socket.match.opponent(socket.num);
                 if (opponent != null)
                     opponent.emit('promotions', socket.match.promotions);
+                if (loading)
+                    socket.emit('promotions', socket.match.promotions);
             } else
                 socket.emit('promotions', socket.match.promotions);
         }
