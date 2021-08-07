@@ -1,1 +1,1 @@
-export default ['grid', 'possibilities', 'pieces', 'check', 'opponentHold', 'hold', 'text', 'toPlace'];
+export default ['grid', 'possibilities', 'pieces', 'arrows', 'newArrow', 'check', 'opponentHold', 'hold', 'text', 'toPlace'];

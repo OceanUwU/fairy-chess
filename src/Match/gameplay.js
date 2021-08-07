@@ -8,6 +8,8 @@ import socket from '../socket.js';
 import Promotions from './Promotions.js';
 import Promote from './Promote.js';
 import showDialog from '../showDialog.js';
+import * as mouseLocation from './mouseLocation.js';
+import arrows from './arrows.js';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 
@@ -182,64 +184,6 @@ async function drawPieces() {
     }
 }
 
-function mouseCanvasLocation(event) {
-    let r = event.target.getBoundingClientRect();
-
-    if (event.touches) {
-        if (event.touches.length > 0)
-            event = event.touches[0];
-        else
-            event = event.changedTouches[0];
-        event.layerX = event.clientX - r.left;
-        event.layerY = event.clientY - r.top;
-    }
-
-    let canvasBoxRatio = r.width / r.height; //gives width:height ratio of THE CANVAS' CONTAINER in format x:1
-    let canvasRatio = matchInfo.width / matchInfo.height; //gives width:height ratio of THE ACTUAL EDITABLE AREA OF THE CANVAS in format x:1
-    let full = canvasRatio > canvasBoxRatio ? 'x' : 'y'; //which axises of the container and the editable area have the same dimensions
-    let fullDimension = full == 'x' ? 'width' : 'height';
-    let partiallyFull = full == 'x' ? 'y' : 'x';
-    let dimension = partiallyFull == 'x' ? 'width' : 'height'; //convert axis name to dimension name
-    let padding = (r[dimension] - ((partiallyFull == 'x' ? canvasRatio / canvasBoxRatio : canvasBoxRatio / canvasRatio) * r[dimension])) / 2; //the distance between (the sides of the canvas which don't touch the canvas' container) and (the edge of the canvas' container)
-    let location = {
-        x: event.layerX,
-        y: event.layerY,
-    };
-    location[partiallyFull] -= padding;
-    location[fullDimension] = r[fullDimension];
-    location[dimension] = r[dimension] - (padding * 2);
-    if (location[partiallyFull] < 0 || location[partiallyFull] > location[dimension])
-        return null;
-    else {
-        [['x', 'width'], ['y', 'height']].forEach(i => location[i[0]] = Math.max(0, Math.min(location[i[0]], location[i[1]]-1)));
-        return location;
-    }
-}
-
-function canvasPos(mouseLocation) {
-    return [
-        mouseLocation.x / mouseLocation.width * squareSize * matchInfo.width - squareSize / 2,
-        mouseLocation.y / mouseLocation.height * squareSize * matchInfo.height - squareSize / 2,
-    ];
-}
-
-function mouseGridLocation(event, black=false) {
-    let mouseLocation = mouseCanvasLocation(event);
-    if (mouseLocation == null)
-        return null;
-    else {
-        let location = {
-            x: Math.floor(mouseLocation.x / mouseLocation.width * matchInfo.width),
-            y: Math.floor(mouseLocation.y / mouseLocation.height * matchInfo.height),
-        };
-        if (black) {
-            location.x = matchInfo.width-location.x-1;
-            location.y = matchInfo.height-location.y-1;
-        }
-        return location;
-    }
-}
-
 async function holdUpdate(opponent=false) {
     requestAnimationFrame(async () => {
         let layer = paper[opponent ? 'opponentHold' : 'hold'];
@@ -305,7 +249,7 @@ function setup(initialMatchInfo) {
 
         if (toPlace !== false) {
             paper.toPlace.ctx.clearRect(0, 0, paper.toPlace.canvas.width, paper.toPlace.canvas.height);
-            let location = mouseGridLocation(event);
+            let location = mouseLocation.mouseGridLocation(event, size);
             if (location == null)
                 return;
             paper.toPlace.ctx.globalAlpha = 0.5;
@@ -318,7 +262,7 @@ function setup(initialMatchInfo) {
                 paper.toPlace.ctx.drawImage(pieceImages[toPlace[0]][toPlace[1]], location.x*squareSize, location.y*squareSize);
             }
         } else {
-            let location = mouseGridLocation(event, matchInfo.black);
+            let location = mouseLocation.mouseGridLocation(event, size, matchInfo.black);
             if (location == null)
                 return document.body.style.cursor = 'auto';
             document.body.style.cursor = document.body.style.cursor == 'grabbing' ? 'grabbing' : (matchInfo.board[location.y][location.x] != null && matchInfo.board[location.y][location.x][1] == matchInfo.black ? 'grab' : 'auto');
@@ -326,11 +270,11 @@ function setup(initialMatchInfo) {
     });
     board.addEventListener('mouseleave', () => paper.toPlace.ctx.clearRect(0, 0, paper.toPlace.canvas.width, paper.toPlace.canvas.height));
     let place = event => {
-        if (event.target.tagName != 'CANVAS') return;
+        if (event.target.tagName != 'CANVAS' || event.which != 1) return;
 
         event.preventDefault();
         if (toPlace !== false) {
-            let location = mouseGridLocation(event);
+            let location = mouseLocation.mouseGridLocation(event, size);
             if (location != null)
                 socket.emit('place', matchInfo.black ? matchInfo.width-location.x-1 : location.x, matchInfo.black ? matchInfo.height-location.y-1 : location.y, toPlace, document.getElementById('isRoyal').checked);
         }
@@ -339,17 +283,18 @@ function setup(initialMatchInfo) {
     board.addEventListener('touchstart', place);
 
     let selectPiece = event => {
-        if (event.target.tagName != 'CANVAS') return;
+        if (event.target.tagName != 'CANVAS' || event.which != 1) return;
         if (matchInfo.started && matchInfo.turn != matchInfo.black) return
 
         event.preventDefault();
         if (toPlace === false) {
-            let location = mouseGridLocation(event);
+            let location = mouseLocation.mouseGridLocation(event, size);
             if (location != null) {
                 let piece = matchInfo.black ? matchInfo.board[matchInfo.height-location.y-1][matchInfo.width-location.x-1] : matchInfo.board[location.y][location.x];
                 if (piece != null && piece[1] == matchInfo.black) {
+                    arrows.clear();
                     holding = [location.y, location.x];
-                    holdingLocation = canvasPos(mouseCanvasLocation(event));
+                    holdingLocation = mouseLocation.canvasPos(mouseLocation.mouseCanvasLocation(event, size), size, squareSize);
                     if (matchInfo.started) {
                         if (matchInfo.black)
                             socket.emit('pickup', matchInfo.height-location.y-1, matchInfo.width-location.x-1);
@@ -375,10 +320,10 @@ function setup(initialMatchInfo) {
         if (event.target.tagName != 'CANVAS') return;
 
         if (toPlace === false && holding != null) {
-            let location = mouseCanvasLocation(event);
+            let location = mouseLocation.mouseCanvasLocation(event, size);
             if (location != null) {
                 let holdingLocationBefore = JSON.stringify(holdingLocation);
-                holdingLocation = canvasPos(mouseCanvasLocation(event));
+                holdingLocation = mouseLocation.canvasPos(mouseLocation.mouseCanvasLocation(event, size), size, squareSize);
                 if (holdingLocationBefore != JSON.stringify(holdingLocation) && matchInfo.started)
                     socket.emit('hold', Math.round(holdingLocation[0]), Math.round(holdingLocation[1]));
             } else {
@@ -400,10 +345,10 @@ function setup(initialMatchInfo) {
     board.addEventListener('touchcancel', cancelSelection);
 
     let dropSelection = async event => {
-        if (event.target.tagName != 'CANVAS') return;
+        if (event.target.tagName != 'CANVAS' || event.which != 1) return;
 
         if (toPlace === false && holding != null) {
-            let location = mouseGridLocation(event);
+            let location = mouseLocation.mouseGridLocation(event, size);
             if (location != null) {
                 if (matchInfo.started && matchInfo.turn == matchInfo.black) {
                     let realLocation = matchInfo.black ? [matchInfo.height-location.y-1, matchInfo.width-location.x-1] : [location.y, location.x];
@@ -433,6 +378,8 @@ function setup(initialMatchInfo) {
     board.addEventListener('mouseup', dropSelection);
     board.addEventListener('touchend', dropSelection);
 
+    arrows.setup(board, paper.arrows, paper.newArrow, matchInfo, squareSize);
+
     if (matchInfo.started) {
         paper.toPlace.canvas.remove();
     }
@@ -450,6 +397,7 @@ function resize(width, height, board) {
     matchInfo.width = width;
     matchInfo.height = height;
     matchInfo.board = board;
+    arrows.clear();
     drawGrid();
 }
 
