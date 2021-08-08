@@ -112,6 +112,20 @@ function drawGrid() {
         for (let y = 0; y < matchInfo.height; y++) {
             paper.grid.ctx.fillStyle = (((x % 2) ? y+1 : y) % 2) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
             paper.grid.ctx.fillRect(x * squareSize, y * squareSize, squareSize, squareSize);
+            paper.grid.ctx.fillStyle = '#ffffff07';
+            paper.grid.ctx.beginPath();
+            paper.grid.ctx.moveTo(x * squareSize, y * squareSize);
+            paper.grid.ctx.lineTo(x * squareSize, (y+1) * squareSize);
+            paper.grid.ctx.lineTo((x+0.5) * squareSize, (y+0.5) * squareSize);
+            paper.grid.ctx.closePath();
+            paper.grid.ctx.fill();
+            paper.grid.ctx.fillStyle = '#00000005';
+            paper.grid.ctx.beginPath();
+            paper.grid.ctx.moveTo((x+1) * squareSize, y * squareSize);
+            paper.grid.ctx.lineTo((x+1) * squareSize, (y+1) * squareSize);
+            paper.grid.ctx.lineTo((x+0.5) * squareSize, (y+0.5) * squareSize);
+            paper.grid.ctx.closePath();
+            paper.grid.ctx.fill();
         }
     }
 
