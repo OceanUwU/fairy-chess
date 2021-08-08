@@ -127,4 +127,5 @@ function setup(board, new_layer, new_newLayer, newMatchInfo, newSquareSize) {
 export default {
     setup,
     clear,
+    draw,
 };
