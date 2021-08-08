@@ -4,6 +4,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import layers from './layers.js';
 import { setup, setAvailablePromotions } from './gameplay.js';
 import FormatPaintIcon from '@material-ui/icons/FormatPaint';
+import OpenWithIcon from '@material-ui/icons/OpenWith';
+import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import GridOnIcon from '@material-ui/icons/GridOn';
 import ShareIcon from '@material-ui/icons/Share';
 import StarIcon from '@material-ui/icons/Star';
@@ -125,6 +128,8 @@ export default function Match(props) {
     let [turn, setTurn] = React.useState(props.matchInfo.turn);
     let [time0, setTime0] = React.useState(0);
     let [time1, setTime1] = React.useState(0);
+    let [arrows, setArrows] = React.useState(false);
+    let [arrowColor, setArrowColor] = React.useState(0);
 
     let timer;
 
@@ -190,6 +195,11 @@ export default function Match(props) {
                     {layers.map(layer => <canvas id={`${layer}Layer`} key={layer} className={classes.layer} />)}
                     <div className={classes.actions}>
                         <Tooltip title="Customise"><IconButton onClick={() => showDialog({title: 'Customise'}, customiser)} size="small"><FormatPaintIcon fontSize="small" /></IconButton></Tooltip>
+                        {arrows
+                            ? <Tooltip title="Arrow drawing mode"><IconButton id="arrowMode" arrowmode="true" arrowcolor={arrowColor} onClick={() => setArrows(false)} size="small"><ArrowRightAltIcon fontSize="small" /></IconButton></Tooltip>
+                            : <Tooltip title="Piece moving mode"><IconButton id="arrowMode" arrowmode="false" onClick={() => setArrows(true)} size="small"><OpenWithIcon fontSize="small" /></IconButton></Tooltip>
+                        }
+                        {arrows ? [0,1,2,3].map(i => <IconButton style={{padding: 0, background: arrowColor == i ? 'grey' : 'transparent'}}><FiberManualRecordIcon style={{color: localStorage[`fc-color-arrows-${i}`]}} onClick={() => setArrowColor(i)} size="small" /></IconButton>) : null}
                         {props.matchInfo.started ? [
                             <Tooltip title="Offer draw"><IconButton onClick={async () => {let diag = await showDialog({
                                 title: 'Really offer draw?',

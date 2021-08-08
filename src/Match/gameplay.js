@@ -270,7 +270,7 @@ function setup(initialMatchInfo) {
     });
     board.addEventListener('mouseleave', () => paper.toPlace.ctx.clearRect(0, 0, paper.toPlace.canvas.width, paper.toPlace.canvas.height));
     let place = event => {
-        if (event.target.tagName != 'CANVAS' || event.which != 1) return;
+        if (event.target.tagName != 'CANVAS' || eval(document.getElementById('arrowMode').getAttribute('arrowmode')) || (!event.touches && event.which != 1)) return;
 
         event.preventDefault();
         if (toPlace !== false) {
@@ -283,7 +283,7 @@ function setup(initialMatchInfo) {
     board.addEventListener('touchstart', place);
 
     let selectPiece = event => {
-        if (event.target.tagName != 'CANVAS' || event.which != 1) return;
+        if (event.target.tagName != 'CANVAS' || eval(document.getElementById('arrowMode').getAttribute('arrowmode')) || (!event.touches && event.which != 1)) return;
         if (matchInfo.started && matchInfo.turn != matchInfo.black) return
 
         event.preventDefault();
@@ -345,7 +345,7 @@ function setup(initialMatchInfo) {
     board.addEventListener('touchcancel', cancelSelection);
 
     let dropSelection = async event => {
-        if (event.target.tagName != 'CANVAS' || event.which != 1) return;
+        if (event.target.tagName != 'CANVAS' || (!event.touches && event.which != 1)) return;
 
         if (toPlace === false && holding != null) {
             let location = mouseLocation.mouseGridLocation(event, size);

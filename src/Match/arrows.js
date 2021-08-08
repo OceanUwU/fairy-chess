@@ -16,13 +16,14 @@ var circleWidth;
 
 function start(event) {
     if (event.which == 1 && newArrow != null) return cancel();
-    if (event.which != 3) return;
+    if (event.target.tagName != 'CANVAS' || !(eval(document.getElementById('arrowMode').getAttribute('arrowmode')) || event.which == 3)) return;
 
     newArrow = null;
     newLayer.ctx.clearRect(0, 0, newLayer.canvas.width, newLayer.canvas.height);
     let location = mouseGridLocation(event, [matchInfo.width, matchInfo.height]);
     if (location == null) return cancel();
-    newArrow = [[location.x, location.y], [location.x, location.y], keyValues.map(e => event[e[0]] * e[1]).reduce((a,b) => a+b)]; //[origin, destination, colour]
+    let colour = keyValues.map(e => event[e[0]] * e[1]).reduce((a,b) => a+b);
+    newArrow = [[location.x, location.y], [location.x, location.y], colour > 0 ? colour : Number(document.getElementById('arrowMode').getAttribute('arrowcolor'))]; //[origin, destination, colour]
     drawNew();
 }
 
@@ -42,7 +43,9 @@ function cancel() {
 }
 
 function create(event) {
-    if (event.which != 3 || newArrow == null) return;
+    if (event.target.tagName != 'CANVAS' || !(eval(document.getElementById('arrowMode').getAttribute('arrowmode')) || event.which == 3) || newArrow == null) return;
+    event.preventDefault();
+    console.log(newArrow);
 
     let match = a => a[0][0] == newArrow[0][0] && a[0][1] == newArrow[0][1] && a[1][0] == newArrow[1][0] && a[1][1] == newArrow[1][1] && a[2] == newArrow[2];
     if (arrows.some(match)) {
@@ -121,6 +124,10 @@ function setup(board, new_layer, new_newLayer, newMatchInfo, newSquareSize) {
     board.addEventListener('mousemove', move);
     board.addEventListener('mouseleave', cancel);
     board.addEventListener('mouseup', create);
+    board.addEventListener('touchstart', start);
+    board.addEventListener('touchmove', move);
+    board.addEventListener('touchcancel', cancel);
+    board.addEventListener('touchend', create);
     board.oncontextmenu = () => false;
 }
 
