@@ -17,6 +17,8 @@ export default {
                     if (occupant == null) { //if tile is empty
                         position = location;
                         directionMoves.push(location);
+                    } else if (occupant[0] == 'barricade') {
+                        break;
                     } else {
                         if (state.board[location[0]][location[1]][1] != state.black)
                             directionMoves.push(location);
