@@ -94,6 +94,13 @@ io.on('connect', socket => {
         }
     });
 
+    socket.on('switch', () => {
+        if (socket.ingame && !socket.match.started) {
+            [socket.match.player0, socket.match.player1] = [socket.match.player1, socket.match.player0];
+            socket.match.emit('switch');
+        }
+    });
+
     socket.on('size', (dimension, direction) => {
         if (socket.ingame && !socket.match.started && (dimension === 'width' || dimension === 'height') && typeof direction == 'number') {
             if (direction > 0) {

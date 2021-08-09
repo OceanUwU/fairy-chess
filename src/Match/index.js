@@ -11,6 +11,7 @@ import GridOnIcon from '@material-ui/icons/GridOn';
 import ShareIcon from '@material-ui/icons/Share';
 import StarIcon from '@material-ui/icons/Star';
 import FlagIcon from '@material-ui/icons/Flag';
+import CachedIcon from '@material-ui/icons/Cached';
 import PanToolIcon from '@material-ui/icons/DragHandle';
 import HomeIcon from '@material-ui/icons/Home';
 import showDialog from '../showDialog.js';
@@ -214,6 +215,7 @@ export default function Match(props) {
                                 buttonAction: () => socket.emit('resign'),
                             })} size="small"><FlagIcon fontSize="small" /></IconButton></Tooltip>,
                         ] : [
+                            <Tooltip title="Switch sides"><IconButton onClick={() => socket.emit('switch')} size="small"><CachedIcon fontSize="small" /></IconButton></Tooltip>,
                             <Tooltip title="Board size"><IconButton onClick={() => showDialog({title: 'Edit board size'}, <BoardSizeEditor />)} size="small"><GridOnIcon fontSize="small" /></IconButton></Tooltip>,
                             <Tooltip title="Export/import boards"><IconButton onClick = {() => showDialog({title: 'Board loader'}, <BoardLoader matchInfo={props.matchInfo} />)} size="small"><ShareIcon fontSize="small" /></IconButton></Tooltip>,
                             <Tooltip title="Promotions"><IconButton onClick={setAvailablePromotions} size="small"><StarIcon fontSize="small" /></IconButton></Tooltip>,

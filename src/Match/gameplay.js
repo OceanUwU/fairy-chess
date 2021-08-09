@@ -462,6 +462,15 @@ function setPromotion(piece) {
     nextPromotion
 }
 
+function switchSides() {
+    matchInfo.black = !matchInfo.black;
+    arrows.clear();
+    drawGrid();
+    drawText();
+    drawPieces();
+}
+
+
 export {
     setup,
     recolorImages,
@@ -477,4 +486,5 @@ export {
     move,
     setAvailablePromotions,
     setPromotion,
+    switchSides,
 };
