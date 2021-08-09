@@ -350,6 +350,7 @@ io.on('connect', socket => {
     socket.on('disconnect', () => {
         if (socket.ingame && matches[socket.ingame]) {
             matches[socket.ingame][`player${socket.num}`] = null;
+            matches[socket.ingame].connected.forEach(s => s.emit('filled', false));
             if (matches[socket.ingame].connected.length == 0)
                 delete matches[socket.ingame];
         }

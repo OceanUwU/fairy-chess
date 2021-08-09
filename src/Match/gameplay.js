@@ -470,6 +470,10 @@ function switchSides() {
     drawPieces();
 }
 
+function filled(isFilled) {
+    matchInfo.filled = isFilled;
+}
+
 
 export {
     setup,
@@ -487,4 +491,5 @@ export {
     setAvailablePromotions,
     setPromotion,
     switchSides,
+    filled
 };

@@ -45,12 +45,16 @@ export default class Match {
     matchInfo(socket) {
         return {
             ...Object.fromEntries(['code', 'width', 'height', 'board', 'started', 'turn', 'history', 'promotions'].map(key => [key, this[key]])),
+            filled: this.connected.length == 2,
             black: socket.num == 1,
         }
     }
 
     join(socket) {
         if (this.connected.length < 2) {
+            if (this.connected.length == 1) {
+                this.connected[0].emit('filled', true);
+            }
             socket.ingame = this.code;
             socket.match = this;
             socket.num = this.player0 == null ? 0 : 1;

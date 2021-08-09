@@ -127,6 +127,7 @@ const useStyles = makeStyles({
 export default function Match(props) {
     const classes = useStyles();
     let [turn, setTurn] = React.useState(props.matchInfo.turn);
+    let [iJustWantTheThingToUpdateHolyShit, setIJustWantTheThingToUpdateHolyShit] = React.useState();
     let [time0, setTime0] = React.useState(0);
     let [time1, setTime1] = React.useState(0);
     let [arrows, setArrows] = React.useState(false);
@@ -136,6 +137,7 @@ export default function Match(props) {
 
     let timerTick = () => {
         eval(`setTime${turn}(time${turn}+${props.matchInfo.started ? 1 : 0})`);
+        setIJustWantTheThingToUpdateHolyShit(Math.random());
         if (!props.matchInfo.started)
             timer = setTimeout(timerTick, 1000);
     }
@@ -168,6 +170,7 @@ export default function Match(props) {
     React.useEffect(() => {
         timer = setTimeout(timerTick, 1000);
         return () => clearTimeout(timer);
+        console.log(props.matchInfo);
     }, [time0, time1]);
 
     let isYou = {textDecoration: 'underline'};
@@ -228,7 +231,7 @@ export default function Match(props) {
                         <div className={classes.pieceMenu} id="pieceMenu" />
                         
                         <FormControlLabel control={<Checkbox id="isRoyal" color="primary" />}label="Is Royal"/>
-                        <Button variant="contained" color="primary" size="small" onClick={() => socket.emit('start')}>Start</Button>
+                        <Button variant="contained" color={props.matchInfo.filled ? 'primary' : 'default'} size="small" onClick={() => socket.emit('start')}>Start</Button>
                     </div>
                 )}
             </div>
