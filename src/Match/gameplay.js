@@ -110,7 +110,7 @@ function drawGrid() {
 
     for (let x = 0; x < matchInfo.width; x++) {
         for (let y = 0; y < matchInfo.height; y++) {
-            paper.grid.ctx.fillStyle = (matchInfo.black ? ((((matchInfo.width-x-1) % 2) ? (matchInfo.height-y-1)+1 : (matchInfo.height-y-1)) % 2) : (((x % 2) ? y+1 : y) % 2)) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
+            paper.grid.ctx.fillStyle = (((x % 2) ? y+1 : y) % 2) ? localStorage['fc-color-c'] : localStorage['fc-color-d'];
             paper.grid.ctx.fillRect(x * squareSize, y * squareSize, squareSize, squareSize);
             paper.grid.ctx.fillStyle = '#ffffff07';
             paper.grid.ctx.beginPath();
