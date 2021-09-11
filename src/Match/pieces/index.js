@@ -17,6 +17,7 @@ export {default as dragon} from './dragon.js';
 export {default as dummy} from './dummy.js';
 export {default as elephant} from './elephant.js';
 export {default as fennec} from './fennec.js';
+export {default as floob} from './floob.js';
 export {default as giraffe} from './giraffe.js';
 export {default as gnu} from './gnu.js';
 export {default as grasshopper} from './grasshopper.js';
