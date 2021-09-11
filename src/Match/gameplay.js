@@ -242,6 +242,26 @@ async function holdUpdate(opponent=false) {
     });
 }
 
+function renderOpponentPossibilities(yep, x, y) {
+    paper.opponentPossibilities.ctx.clearRect(0, 0, paper.opponentPossibilities.canvas.width, paper.opponentPossibilities.canvas.height);
+    paper.opponentPossibilities.ctx.globalAlpha = 0.3;
+    if (yep) {
+        let moves = holdingMoves = pieceFn.validMoves({
+            board: matchInfo.board,
+            black: !matchInfo.black,
+            position: matchInfo.black ? [matchInfo.height-y-1, matchInfo.width-x-1] : [y, x],
+            history: matchInfo.history,
+        });
+        for (let move of moves) {
+            let take = matchInfo.board[move[0]][move[1]] != null && matchInfo.board[move[0]][move[1]][1] == matchInfo.black;
+            if (matchInfo.black) {
+                move = move.map((i, index) => matchInfo[['height', 'width'][index]] - i - 1);
+            }
+            paper.opponentPossibilities.ctx.drawImage(take ? takeImg : moveImg, move[1] * squareSize, move[0] * squareSize);
+        }
+    }
+}
+
 function setup(initialMatchInfo) {
     matchInfo = initialMatchInfo;
 
@@ -277,12 +297,24 @@ function setup(initialMatchInfo) {
             }
         } else {
             let location = mouseLocation.mouseGridLocation(event, size, matchInfo.black);
-            if (location == null)
+            if (location == null) {
+                renderOpponentPossibilities(false);
                 return document.body.style.cursor = 'auto';
+            }
             document.body.style.cursor = document.body.style.cursor == 'grabbing' ? 'grabbing' : (matchInfo.board[location.y][location.x] != null && matchInfo.board[location.y][location.x][1] == matchInfo.black ? 'grab' : 'auto');
+            if (holding == null) {
+                if (matchInfo.board[location.y][location.x] != null && matchInfo.board[location.y][location.x][1] != matchInfo.black) {
+                    renderOpponentPossibilities(true, location.x, location.y);
+                } else {
+                    renderOpponentPossibilities(false);
+                }
+            }
         }
     });
-    board.addEventListener('mouseleave', () => paper.toPlace.ctx.clearRect(0, 0, paper.toPlace.canvas.width, paper.toPlace.canvas.height));
+    board.addEventListener('mouseleave', () => {
+        paper.toPlace.ctx.clearRect(0, 0, paper.toPlace.canvas.width, paper.toPlace.canvas.height);
+        renderOpponentPossibilities(false);
+    });
     let place = event => {
         if (event.target.tagName != 'CANVAS' || eval(document.getElementById('arrowMode').getAttribute('arrowmode')) || (!event.touches && event.which != 1)) return;
 
