@@ -219,7 +219,7 @@ async function holdUpdate(opponent=false) {
             //draw held piece above board
             layer.ctx.globalAlpha = 1;
             pieceImages = await pieceImages;
-            let piece = matchInfo.black ? matchInfo.board[matchInfo.width-hold[0]-1][matchInfo.height-hold[1]-1] : matchInfo.board[hold[0]][hold[1]];
+            let piece = matchInfo.black ? matchInfo.board[matchInfo.height-hold[0]-1][matchInfo.width-hold[1]-1] : matchInfo.board[hold[0]][hold[1]];
             if (piece[2]) {
                 layer.ctx.shadowBlur = shadowBlur;
                 layer.ctx.shadowColor = piece[1] == matchInfo.black ? localStorage[`fc-color-royalGlowAlly`] : localStorage[`fc-color-royalGlowEnemy`];
@@ -249,7 +249,7 @@ function renderOpponentPossibilities(yep, x, y) {
         let moves = holdingMoves = pieceFn.validMoves({
             board: matchInfo.board,
             black: !matchInfo.black,
-            position: matchInfo.black ? [matchInfo.height-y-1, matchInfo.width-x-1] : [y, x],
+            position: [y, x],
             history: matchInfo.history,
         });
         for (let move of moves) {
@@ -398,7 +398,7 @@ function setup(initialMatchInfo) {
             if (location != null) {
                 if (matchInfo.started && matchInfo.turn == matchInfo.black) {
                     let realLocation = matchInfo.black ? [matchInfo.height-location.y-1, matchInfo.width-location.x-1] : [location.y, location.x];
-                    let realHolding = matchInfo.black ? [matchInfo.width-holding[0]-1, matchInfo.height-holding[1]-1] : holding;
+                    let realHolding = matchInfo.black ? [matchInfo.height-holding[0]-1, matchInfo.width-holding[1]-1] : holding;
                     if (location.y == 0 && ['pawn', 'weakpawn'].includes(matchInfo.board[realHolding[0]][realHolding[1]][0])) {
                         pieceImages = await pieceImages;
 

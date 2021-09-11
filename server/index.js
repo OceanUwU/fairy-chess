@@ -96,7 +96,13 @@ io.on('connect', socket => {
 
     socket.on('switch', () => {
         if (socket.ingame && !socket.match.started) {
-            [socket.match.player0, socket.match.player1] = [socket.match.player1, socket.match.player0];
+            let store = socket.match.player0;
+            socket.match.player0 = socket.match.player1;
+            if (socket.match.player0)
+                socket.match.player0.num = 0;
+            socket.match.player1 = store;
+            if (socket.match.player1)
+                socket.match.player1.num = 1;
             socket.match.emit('switch');
         }
     });
