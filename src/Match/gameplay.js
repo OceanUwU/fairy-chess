@@ -412,10 +412,6 @@ function setup(initialMatchInfo) {
                     } else
                         socket.emit('drop', realHolding, realLocation);
                 }
-                
-                holding = null;
-                holdUpdate();
-                socket.emit('cancelHold');
     
                 document.body.style.cursor = matchInfo.board[location.y][location.x] != null && matchInfo.board[location.y][location.x][1] == matchInfo.black ? 'grab' : 'auto';
             }
@@ -478,6 +474,10 @@ function move(origin, destination) {
     previousMove = [origin, destination];
     drawGrid();
     drawPieces();
+
+    holding = null;
+    holdUpdate();
+    socket.emit('cancelHold');
 }
 async function setAvailablePromotions() {
     if (!matchInfo.started) {
